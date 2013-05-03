@@ -62,6 +62,15 @@ void ProtocolInterpreter::setMode(string mode) {
 }
 
 /**
+ * Установка структуры файлов.
+ * 
+ * @param structure Структура файла
+ */
+void ProtocolInterpreter::setStructure(string structure) {
+    this->structure = structure;
+}
+
+/**
  * Открытие управляющего соединения.
  */
 void ProtocolInterpreter::openControlConnection() {
@@ -146,6 +155,8 @@ void ProtocolInterpreter::sendCommand(string command) {
         sendType();
     } else if (command == "MODE") {
         sendMode();
+    } else if (command == "STRU") {
+        sendStru();
     } else if (command == "QUIT") {
         sendQuit();
     } else if (command == "NOOP") {
@@ -217,6 +228,21 @@ void ProtocolInterpreter::sendMode() {
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
         ui->printMessage(2, "MODE sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return;
+    }
+    printReply();
+}
+
+/**
+ * Отправка команды STRU.
+ */
+void ProtocolInterpreter::sendStru() {
+    commandBuffer = "STRU " + structure + "\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        ui->printMessage(2, "STRU sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;

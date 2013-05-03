@@ -17,6 +17,7 @@ UserInterface::UserInterface() {
     setPassword("");
     setType("A N");
     setMode("S");
+    setStructure("F");
 }
 
 /**
@@ -65,6 +66,15 @@ void UserInterface::setMode(string mode) {
 }
 
 /**
+ * Установка структуры файла.
+ * 
+ * @param structure Структура файла.
+ */
+void UserInterface::setStructure(string structure) {
+    this->structure = structure;
+}
+
+/**
  * Осуществление соединения, посредством использования интерпретатора протокола.
  */
 void UserInterface::connect() {
@@ -75,9 +85,17 @@ void UserInterface::connect() {
     pi->openControlConnection();
     printMessage(0, "USER " + user + "\n");
     pi->sendCommand("USER");
+    pi->setType(type);
+    printMessage(0, "TYPE A N\n");
+    pi->sendCommand("TYPE");
     pi->setMode(mode);
     printMessage(0, "MODE S\n");
     pi->sendCommand("MODE");
+    pi->setStructure(structure);
+    printMessage(0, "STRU F\n");
+    pi->sendCommand("STRU");
+    printMessage(0, "NOOP\n");
+    pi->sendCommand("NOOP");
     printMessage(0, "QUIT\n");
     pi->sendCommand("QUIT");
     pi->closeControlConnection();
