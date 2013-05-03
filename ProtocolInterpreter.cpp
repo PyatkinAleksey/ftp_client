@@ -16,10 +16,7 @@ ProtocolInterpreter::ProtocolInterpreter(UserInterface ui, string address, strin
 void ProtocolInterpreter::ftpConnect() {
     WORD wVersionRequested;
     WSADATA wsaData;
-    SOCKET connectionSocket;
     sockaddr_in clientAddress;
-    char buf[4096];
-    int result;
     
     wVersionRequested = MAKEWORD(2, 2);
     result = WSAStartup(wVersionRequested, &wsaData);
@@ -47,12 +44,42 @@ void ProtocolInterpreter::ftpConnect() {
         return;
     }
     do {
-        result = recv(connectionSocket, buf, 4096, 0);
+        result = recv(connectionSocket, buf, MAX_BUF_LEN, 0);
         if (result > 0) {
             ui.printMessage(0, buf);
-            memset(buf, 0, 4096);
+            if (buf[result-6] == '2' && buf[result-5] == '2' && buf[result-4] == '0') {
+                // Приветствие получено
+                break;
+            }
+            memset(buf, 0, MAX_BUF_LEN);
         }
     } while(result > 0);
+    authorize();
     result = closesocket(connectionSocket);
     WSACleanup();
+}
+
+void ProtocolInterpreter::authorize() {
+    // Отправка команды USER
+    memset(buf, 0, MAX_BUF_LEN);
+    strcat(buf, "USER ");
+    strcat(buf, user.c_str());
+    strcat(buf, "\r\n");
+    printf("%s", buf);
+    result = send(connectionSocket, buf, MAX_BUF_LEN, 0);
+    if (result == SOCKET_ERROR) {
+        ui.printMessage(2, "USER sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return;
+    }
+    // Получение отклика
+    memset(buf, 0, MAX_BUF_LEN);
+    do {
+        result = recv(connectionSocket, buf, MAX_BUF_LEN, 0);
+        if (result > 0) {
+            ui.printMessage(0, buf);
+            break;
+        }
+    } while(result > 0);
 }

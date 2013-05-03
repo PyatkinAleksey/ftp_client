@@ -22,6 +22,7 @@ class UserInterface {
     private:
         string address;
         string user;
+        
         void setAddress();
         void setUser();
 };

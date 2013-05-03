@@ -19,7 +19,13 @@ class ProtocolInterpreter {
         void ftpConnect();
         
     private:
+        static const int MAX_BUF_LEN = 4096;
         UserInterface ui;
         string address;
         string user;
+        SOCKET connectionSocket;
+        char buf[MAX_BUF_LEN];
+        int result;
+        
+        void authorize();
 };
