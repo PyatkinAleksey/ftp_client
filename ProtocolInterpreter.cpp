@@ -51,10 +51,6 @@ void ProtocolInterpreter::ftpConnect() {
         if (result > 0) {
             ui.printMessage(0, buf);
             memset(buf, 0, 4096);
-        } else if (result == 0) {
-            ui.printMessage(2, "Connection closed.");
-        } else {
-            ui.printMessage(2, "Receiving failed.");
         }
     } while(result > 0);
     result = closesocket(connectionSocket);
