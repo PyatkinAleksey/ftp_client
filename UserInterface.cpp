@@ -15,6 +15,7 @@ UserInterface::UserInterface() {
     setAddress("80.250.160.25");
     setUser("anonymous");
     setPassword("");
+    setType("A N");
 }
 
 /**
@@ -45,6 +46,15 @@ void UserInterface::setPassword(string password) {
 }
 
 /**
+ * Установить тип представления файлов.
+ * 
+ * @param type Тип представления файлов.
+ */
+void UserInterface::setType(string type) {
+    this->type = type;
+}
+
+/**
  * Осуществление соединения, посредством использования интерпретатора протокола.
  */
 void UserInterface::connect() {
@@ -55,8 +65,9 @@ void UserInterface::connect() {
     pi->openControlConnection();
     printMessage(0, "USER " + user + "\n");
     pi->sendCommand("USER");
-    printMessage(0, "NOOP\n");
-    pi->sendCommand("NOOP");
+    pi->setType(type);
+    printMessage(0, "TYPE A N\n");
+    pi->sendCommand("TYPE");
     printMessage(0, "QUIT\n");
     pi->sendCommand("QUIT");
     pi->closeControlConnection();

@@ -25,6 +25,7 @@ class UserInterface {
         void setAddress(string address);                // Установка адреса сервера
         void setUser(string user);                      // Установка имени пользователя
         void setPassword(string password);              // Установить пароль
+        void setType(string type);                      // Установить тип представления файлов
         void connect();                                 // Осуществление соединения через объект интерпретатора протокола
         void printMessage(int type, string message);    // Вывод сообщений на экран
 
@@ -32,4 +33,5 @@ class UserInterface {
         string address;     // Адрес сервера
         string user;        // Имя пользователя
         string password;    // Пароль
+        string type;        // Тип представления файлов
 };

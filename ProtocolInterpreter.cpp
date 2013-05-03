@@ -44,6 +44,15 @@ void ProtocolInterpreter::setPassword(string password) {
 }
 
 /**
+ * Установка типов представления файлов.
+ * 
+ * @param type Тип представления файлов.
+ */
+void ProtocolInterpreter::setType(string type) {
+    this->type = type;
+}
+
+/**
  * Открытие управляющего соединения.
  */
 void ProtocolInterpreter::openControlConnection() {
@@ -124,7 +133,9 @@ void ProtocolInterpreter::sendCommand(string command) {
         sendUser();
     } else if (command == "PASS") {
         sendPass();
-    }else if (command == "QUIT") {
+    } else if (command == "TYPE") {
+        sendType();
+    } else if (command == "QUIT") {
         sendQuit();
     } else if (command == "NOOP") {
         sendNoop();
@@ -165,6 +176,21 @@ void ProtocolInterpreter::sendPass() {
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
         ui->printMessage(2, "Additional information sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return;
+    }
+    printReply();
+}
+
+/**
+ * Отправка команды TYPE.
+ */
+void ProtocolInterpreter::sendType() {
+    commandBuffer = "TYPE " + type + "\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        ui->printMessage(2, "TYPE sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;

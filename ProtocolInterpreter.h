@@ -26,6 +26,7 @@ class ProtocolInterpreter {
         void setAddress(string address);        // Установка значения адреса сервера
         void setUser(string user);              // Установка значения имени пользователя
         void setPassword(string password);      // Установка значения пароля
+        void setType(string type);              // Установка значения типа представления файлов
         void sendCommand(string command);       // Отправка команды
         
     private:
@@ -34,6 +35,7 @@ class ProtocolInterpreter {
         string address;                         // Адрес сервера
         string user;                            // Имя пользователя
         string password;                        // Пароль
+        string type;                            // Тип представления файлов
         SOCKET connectionSocket;                // Сокет управляющего соединения
         char replyBuffer[MAX_BUF_LEN];          // Буфер откликов
         string commandBuffer;                   // Буфер команд
@@ -42,6 +44,7 @@ class ProtocolInterpreter {
         void printReply();                      // Вывод отклика от сервера
         void sendUser();                        // Отправка команды USER
         void sendPass();                        // Отправка команды PASS
+        void sendType();                        // Отправка команды TYPE
         void sendQuit();                        // Отправка команды QUIT
         void sendNoop();                        // Отправка команды NOOP
 };
