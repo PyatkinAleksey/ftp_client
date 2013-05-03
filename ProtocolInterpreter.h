@@ -43,4 +43,5 @@ class ProtocolInterpreter {
         void sendUser();                        // Отправка команды USER
         void sendPass();                        // Отправка команды PASS
         void sendQuit();                        // Отправка команды QUIT
+        void sendNoop();                        // Отправка команды NOOP
 };

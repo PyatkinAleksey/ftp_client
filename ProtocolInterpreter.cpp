@@ -126,6 +126,8 @@ void ProtocolInterpreter::sendCommand(string command) {
         sendPass();
     }else if (command == "QUIT") {
         sendQuit();
+    } else if (command == "NOOP") {
+        sendNoop();
     } else {
         ui->printMessage(1, "Unknown command!");
     }
@@ -145,7 +147,7 @@ void ProtocolInterpreter::sendUser() {
     }
     printReply();
     if (strstr(replyBuffer, "331 ")) { // Требуется ввод дополнительной информации (например, E-Mail-адрес)
-        ui->printMessage(0, "PASS ***\r\n");
+        ui->printMessage(0, "PASS ***\n");
         sendCommand("PASS");
     }
 }
@@ -178,6 +180,21 @@ void ProtocolInterpreter::sendQuit() {
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
         ui->printMessage(2, "QUIT sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return;
+    }
+    printReply();
+}
+
+/**
+ * Отправка команды NOOP.
+ */
+void ProtocolInterpreter::sendNoop() {
+    commandBuffer = "NOOP\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        ui->printMessage(2, "NOOP sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;

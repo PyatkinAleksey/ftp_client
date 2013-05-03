@@ -55,6 +55,8 @@ void UserInterface::connect() {
     pi->openControlConnection();
     printMessage(0, "USER " + user + "\n");
     pi->sendCommand("USER");
+    printMessage(0, "NOOP\n");
+    pi->sendCommand("NOOP");
     printMessage(0, "QUIT\n");
     pi->sendCommand("QUIT");
     pi->closeControlConnection();
