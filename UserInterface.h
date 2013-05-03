@@ -26,6 +26,7 @@ class UserInterface {
         void setUser(string user);                      // Установка имени пользователя
         void setPassword(string password);              // Установить пароль
         void setType(string type);                      // Установить тип представления файлов
+        void setMode(string mode);                      // Установить режим передачи файлов
         void connect();                                 // Осуществление соединения через объект интерпретатора протокола
         void printMessage(int type, string message);    // Вывод сообщений на экран
 
@@ -34,4 +35,5 @@ class UserInterface {
         string user;        // Имя пользователя
         string password;    // Пароль
         string type;        // Тип представления файлов
+        string mode;        // Режим передачи файлов
 };

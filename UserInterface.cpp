@@ -16,6 +16,7 @@ UserInterface::UserInterface() {
     setUser("anonymous");
     setPassword("");
     setType("A N");
+    setMode("S");
 }
 
 /**
@@ -55,6 +56,15 @@ void UserInterface::setType(string type) {
 }
 
 /**
+ * Установить режим передачи файлов.
+ * 
+ * @param mode Режим передачи файлов.
+ */
+void UserInterface::setMode(string mode) {
+    this->mode = mode;
+}
+
+/**
  * Осуществление соединения, посредством использования интерпретатора протокола.
  */
 void UserInterface::connect() {
@@ -65,9 +75,9 @@ void UserInterface::connect() {
     pi->openControlConnection();
     printMessage(0, "USER " + user + "\n");
     pi->sendCommand("USER");
-    pi->setType(type);
-    printMessage(0, "TYPE A N\n");
-    pi->sendCommand("TYPE");
+    pi->setMode(mode);
+    printMessage(0, "MODE S\n");
+    pi->sendCommand("MODE");
     printMessage(0, "QUIT\n");
     pi->sendCommand("QUIT");
     pi->closeControlConnection();

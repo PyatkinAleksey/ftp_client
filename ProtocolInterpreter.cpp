@@ -53,6 +53,15 @@ void ProtocolInterpreter::setType(string type) {
 }
 
 /**
+ * Установка режима передачи файлов.
+ * 
+ * @param mode Режим передачи файлов.
+ */
+void ProtocolInterpreter::setMode(string mode) {
+    this->mode = mode;
+}
+
+/**
  * Открытие управляющего соединения.
  */
 void ProtocolInterpreter::openControlConnection() {
@@ -135,6 +144,8 @@ void ProtocolInterpreter::sendCommand(string command) {
         sendPass();
     } else if (command == "TYPE") {
         sendType();
+    } else if (command == "MODE") {
+        sendMode();
     } else if (command == "QUIT") {
         sendQuit();
     } else if (command == "NOOP") {
@@ -191,6 +202,21 @@ void ProtocolInterpreter::sendType() {
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
         ui->printMessage(2, "TYPE sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return;
+    }
+    printReply();
+}
+
+/**
+ * Отправка команды MODE.
+ */
+void ProtocolInterpreter::sendMode() {
+    commandBuffer = "MODE " + mode + "\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        ui->printMessage(2, "MODE sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
