@@ -35,6 +35,15 @@ void ProtocolInterpreter::setUser(string user) {
 }
 
 /**
+ * Установка пароля.
+ * 
+ * @param password Пароль.
+ */
+void ProtocolInterpreter::setPassword(string password) {
+    this->password = password;
+}
+
+/**
  * Открытие управляющего соединения.
  */
 void ProtocolInterpreter::openControlConnection() {
@@ -71,14 +80,14 @@ void ProtocolInterpreter::openControlConnection() {
     }
     // Получение отклика-приветствия
     do {
-        result = recv(connectionSocket, buf, MAX_BUF_LEN, 0);
+        result = recv(connectionSocket, replyBuffer, MAX_BUF_LEN, 0);
         if (result > 0) {
-            ui->printMessage(0, buf);
-            if (buf[result-6] == '2' && buf[result-5] == '2' && buf[result-4] == '0') {
+            ui->printMessage(0, replyBuffer);
+            if (strstr(replyBuffer, "220 ") != NULL) {
                 // Приветствие получено
                 break;
             }
-            memset(buf, 0, MAX_BUF_LEN);
+            memset(replyBuffer, 0, MAX_BUF_LEN);
         }
     } while(result > 0);
 }
@@ -92,6 +101,20 @@ void ProtocolInterpreter::closeControlConnection() {
 }
 
 /**
+ * Вывод на экран отклика от FTP-сервера.
+ */
+void ProtocolInterpreter::printReply() {
+    memset(replyBuffer, 0, MAX_BUF_LEN);
+    do {
+        result = recv(connectionSocket, replyBuffer, MAX_BUF_LEN, 0);
+        if (result > 0) {
+            ui->printMessage(0, replyBuffer);
+            break;
+        }
+    } while(result > 0);
+}
+
+/**
  * Отправка команды FTP-серверу.
  * 
  * @param command FTP-команда.
@@ -99,6 +122,10 @@ void ProtocolInterpreter::closeControlConnection() {
 void ProtocolInterpreter::sendCommand(string command) {
     if (command == "USER") {
         sendUser();
+    } else if (command == "PASS") {
+        sendPass();
+    }else if (command == "QUIT") {
+        sendQuit();
     } else {
         ui->printMessage(1, "Unknown command!");
     }
@@ -108,25 +135,52 @@ void ProtocolInterpreter::sendCommand(string command) {
  * Отправка команды USER.
  */
 void ProtocolInterpreter::sendUser() {
-    memset(buf, 0, MAX_BUF_LEN);
-    strcat(buf, "USER ");
-    strcat(buf, user.c_str());
-    strcat(buf, "\r\n");
-    printf("%s", buf);
-    result = send(connectionSocket, buf, MAX_BUF_LEN, 0);
+    commandBuffer = "USER " + user + "\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
         ui->printMessage(2, "USER sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
     }
-    // Получение отклика
-    memset(buf, 0, MAX_BUF_LEN);
-    do {
-        result = recv(connectionSocket, buf, MAX_BUF_LEN, 0);
-        if (result > 0) {
-            ui->printMessage(0, buf);
-            break;
-        }
-    } while(result > 0);
+    printReply();
+    if (strstr(replyBuffer, "331 ")) { // Требуется ввод дополнительной информации (например, E-Mail-адрес)
+        ui->printMessage(0, "PASS ***\r\n");
+        sendCommand("PASS");
+    }
+}
+
+/**
+ * Отправка команды PASS.
+ */
+void ProtocolInterpreter::sendPass() {
+    if (password == "") {
+        ui->printMessage(1, "Enter your password:");
+        cin >> password;
+        ui->setPassword(password);
+    }
+    commandBuffer = "PASS " + password + "\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        ui->printMessage(2, "Additional information sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return;
+    }
+    printReply();
+}
+
+/**
+ * Отправка команды QUIT.
+ */
+void ProtocolInterpreter::sendQuit() {
+    commandBuffer = "QUIT\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        ui->printMessage(2, "QUIT sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return;
+    }
+    printReply();
 }

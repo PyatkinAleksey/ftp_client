@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <iostream>
 #include <string.h>
 #include <winsock2.h>
 #include "UserInterface.h"
@@ -24,6 +25,7 @@ class ProtocolInterpreter {
         void closeControlConnection();          // Закрытие управляющего соединения
         void setAddress(string address);        // Установка значения адреса сервера
         void setUser(string user);              // Установка значения имени пользователя
+        void setPassword(string password);      // Установка значения пароля
         void sendCommand(string command);       // Отправка команды
         
     private:
@@ -31,9 +33,14 @@ class ProtocolInterpreter {
         UserInterface *ui;                      // Объект пользовательского интерфейса
         string address;                         // Адрес сервера
         string user;                            // Имя пользователя
+        string password;                        // Пароль
         SOCKET connectionSocket;                // Сокет управляющего соединения
-        char buf[MAX_BUF_LEN];                  // Буфер
+        char replyBuffer[MAX_BUF_LEN];          // Буфер откликов
+        string commandBuffer;                   // Буфер команд
         int result;                             // Код результата
         
+        void printReply();                      // Вывод отклика от сервера
         void sendUser();                        // Отправка команды USER
+        void sendPass();                        // Отправка команды PASS
+        void sendQuit();                        // Отправка команды QUIT
 };

@@ -22,13 +22,14 @@ using namespace std;
 class UserInterface {
     public:
         UserInterface();                                // Вызов функций получения свойств соединения
+        void setAddress(string address);                // Установка адреса сервера
+        void setUser(string user);                      // Установка имени пользователя
+        void setPassword(string password);              // Установить пароль
         void connect();                                 // Осуществление соединения через объект интерпретатора протокола
         void printMessage(int type, string message);    // Вывод сообщений на экран
 
     private:
-        string address; // Адрес сервера
-        string user;    // Имя пользователя
-        
-        void setAddress();  // Получение адреса сервера
-        void setUser();     // Получение имени пользователя
+        string address;     // Адрес сервера
+        string user;        // Имя пользователя
+        string password;    // Пароль
 };

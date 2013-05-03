@@ -12,22 +12,36 @@
  * Вызов функций получения свойств соединения.
  */
 UserInterface::UserInterface() {
-    setAddress();
-    setUser();
+    setAddress("80.250.160.25");
+    setUser("anonymous");
+    setPassword("");
 }
 
 /**
- * Получение адреса сервер.
+ * Установка адреса сервер.
+ * 
+ * @param address Адрес сервера.
  */
-void UserInterface::setAddress() {
-    address = "80.250.160.25"; //ftp.ru.debian.org
+void UserInterface::setAddress(string address) {
+    this->address = address;
 }
 
 /**
- * Получение имени пользователя.
+ * Установка имени пользователя.
+ * 
+ * @param user Имя пользователя.
  */
-void UserInterface::setUser() {
-    user = "anonymous";
+void UserInterface::setUser(string user) {
+    this->user = user;
+}
+
+/**
+ * Установка пароля.
+ * 
+ * @param password Пароль.
+ */
+void UserInterface::setPassword(string password) {
+    this->password = password;
 }
 
 /**
@@ -37,8 +51,12 @@ void UserInterface::connect() {
     ProtocolInterpreter *pi = new ProtocolInterpreter(this);
     pi->setAddress(address);
     pi->setUser(user);
+    pi->setPassword(password);
     pi->openControlConnection();
+    printMessage(0, "USER " + user + "\n");
     pi->sendCommand("USER");
+    printMessage(0, "QUIT\n");
+    pi->sendCommand("QUIT");
     pi->closeControlConnection();
 }
 
