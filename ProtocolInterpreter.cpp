@@ -428,6 +428,7 @@ void ProtocolInterpreter::sendRetr() {
         }
     } else {
         udtp->retrieve();
+        printReply();
     }
     if (passive) {
         udtp->closeConnection();
