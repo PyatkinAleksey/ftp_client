@@ -12,12 +12,25 @@
  * Вызов функций получения свойств соединения.
  */
 UserInterface::UserInterface() {
+    setLocalPath("D:\\");
     setAddress("80.250.160.25");
     setUser("anonymous");
     setPassword("");
     setType("A N");
     setMode("S");
     setStructure("F");
+    setPath("robots.txt");
+    setPortData("109,229,241,245,4,150");
+    setPassive(0);
+}
+
+/**
+ * Установка локального адреса для сохранения файлов, получаемых от FTP-сервера.
+ * 
+ * @param path Путь.
+ */
+void UserInterface::setLocalPath(string path) {
+    this->localPath = path;
 }
 
 /**
@@ -75,6 +88,33 @@ void UserInterface::setStructure(string structure) {
 }
 
 /**
+ * Установить путь к файлу.
+ * 
+ * @param path Путь.
+ */
+void UserInterface::setPath(string path) {
+    this->path = path;
+}
+
+/**
+ * Установка данных для команды PORT.
+ * 
+ * @param portData Данные (IP-адрес и порт).
+ */
+void UserInterface::setPortData(string portData) {
+    this->portData = portData;
+}
+
+/**
+ * Установка использования пассивного режима.
+ * 
+ * @param passive Флаг использования пассивного режима (0 - активный, другое - пассивный).
+ */
+void UserInterface::setPassive(int passive) {
+    this->passive = passive;
+}
+
+/**
  * Осуществление соединения, посредством использования интерпретатора протокола.
  */
 void UserInterface::connect() {
@@ -94,6 +134,19 @@ void UserInterface::connect() {
     pi->setStructure(structure);
     printMessage(0, "STRU F\n");
     pi->sendCommand("STRU");
+    pi->setPassive(passive);
+    if (passive) {
+        printMessage(0, "PASV\n");
+        pi->sendCommand("PASV");
+    } else {
+        pi->setPortData(portData);
+        printMessage(0, "PORT " + portData + "\n");
+        pi->sendCommand("PORT");
+    }
+    pi->setPath(path);
+    pi->setLocalPath(localPath);
+    printMessage(0, "RETR " + path + "\n");
+    pi->sendCommand("RETR");
     printMessage(0, "NOOP\n");
     pi->sendCommand("NOOP");
     printMessage(0, "QUIT\n");

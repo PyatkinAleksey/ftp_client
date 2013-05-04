@@ -8,12 +8,36 @@
 #include "ProtocolInterpreter.h"
 
 /**
+ * Поточная функция для запуска передачи файлов отдельным потоком.
+ * 
+ * @param parameter Должен быть передан указатель на объект класса ProtocolInterpreter
+ * 
+ * @return 
+ */
+DWORD WINAPI startDTP(LPVOID parameter) {
+    ProtocolInterpreter *pi = (ProtocolInterpreter*)parameter;
+    pi->udtp->openConnection();
+    
+    return 0;
+}
+
+/**
  * Инициализация интерпретатора протокола.
  * 
  * @param ui Объект пользовательского интерфейса.
  */
 ProtocolInterpreter::ProtocolInterpreter(UserInterface *ui) {
     this->ui = ui;
+    this->udtp = new UserDTP(ui);
+}
+
+/**
+ * Установка локального пути для сохранения файлов, получаемых от сервера.
+ * 
+ * @param path Путь.
+ */
+void ProtocolInterpreter::setLocalPath(string path) {
+    this->localPath = path;
 }
 
 /**
@@ -68,6 +92,73 @@ void ProtocolInterpreter::setMode(string mode) {
  */
 void ProtocolInterpreter::setStructure(string structure) {
     this->structure = structure;
+}
+
+/**
+ * Установка пути к файлу.
+ * 
+ * @param path Путь.
+ */
+void ProtocolInterpreter::setPath(string path) {
+    this->path = path;
+}
+
+/**
+ * Установить данные для команды PORT.
+ * 
+ * @param portData Данные для команды PORT (IP-адрес и порт).
+ */
+void ProtocolInterpreter::setPortData(string portData) {
+    this->portData = portData;
+}
+
+/**
+ * Установка флага использования пассивного режима.
+ * 
+ * @param passive Флаг (0 - активный режима, другое - пассивный).
+ */
+void ProtocolInterpreter::setPassive(int passive) {
+    this->passive = passive;
+}
+
+/**
+ * Получение номера динамического порта из 227 отклика команды PASV.
+ * 
+ * @return Номер порта.
+ */
+int ProtocolInterpreter::getPort() {
+    char *symbol;
+    char num[5];
+    int i;
+    int port = 0;
+    
+    while (symbol = strstr(replyBuffer, ",")) {
+        *symbol = '.';
+    }
+    // Получение первого числа
+    symbol = strstr(replyBuffer, address.c_str()) + address.length() + 1;
+    i = 0;
+    while (*symbol != '.') {
+        num[i] = *symbol;
+        i++;
+        symbol++;
+    }
+    num[i] = 0;
+    port = atoi(num)*256;
+    // Получение второго числа
+    i = 0;
+    symbol++;
+    while (*symbol == '0' || *symbol == '1' || *symbol == '2' || *symbol == '3' ||
+            *symbol == '4' || *symbol == '5' || *symbol == '6' || *symbol == '7' ||
+            *symbol == '8' || *symbol == '9') {
+        num[i] = *symbol;
+        i++;
+        symbol++;
+    }
+    num[i] = 0;
+    port += atoi(num);
+    
+    return port;
 }
 
 /**
@@ -157,6 +248,12 @@ void ProtocolInterpreter::sendCommand(string command) {
         sendMode();
     } else if (command == "STRU") {
         sendStru();
+    } else if (command == "PORT") {
+        sendPort();
+    } else if (command == "PASV") {
+        sendPasv();
+    } else if (command == "RETR") {
+        sendRetr();
     } else if (command == "QUIT") {
         sendQuit();
     } else if (command == "NOOP") {
@@ -248,6 +345,95 @@ void ProtocolInterpreter::sendStru() {
         return;
     }
     printReply();
+}
+
+/**
+ * Отправка команды PORT.
+ */
+void ProtocolInterpreter::sendPort() {
+    commandBuffer = "PORT " + portData + "\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        ui->printMessage(2, "PORT sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return;
+    }
+    printReply();
+}
+
+/**
+ * Отправка команды PASV.
+ */
+void ProtocolInterpreter::sendPasv() {
+    commandBuffer = "PASV\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        ui->printMessage(2, "PASV sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return;
+    }
+    printReply();
+}
+
+/**
+ * Отправка команды RETR.
+ */
+void ProtocolInterpreter::sendRetr() {
+    udtp->setAddress(address);
+    udtp->setPath(path);
+    udtp->setLocalPath(localPath);
+    udtp->setPassive(passive);
+    if (passive) {
+        udtp->setPort(getPort());
+        udtp->openConnection();
+    } else {
+        connection = CreateThread(NULL, 0, startDTP, this, 0, NULL);
+    }
+    commandBuffer = "RETR " + path + "\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        ui->printMessage(2, "RETR sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return;
+    }
+    printReply();
+    if (strstr(replyBuffer, "425 ")) {
+        if (passive) {
+            udtp->closeConnection();
+            ui->printMessage(1, "Passive mode using failed! Try active mode.");
+            ui->printMessage(0, "PORT " + portData + "\n");
+            sendCommand("PORT");
+            passive = 0;
+            ui->setPassive(passive);
+            udtp->setPassive(passive);
+            connection = CreateThread(NULL, 0, startDTP, this, 0, NULL);
+            ui->printMessage(0, "RETR " + path + "\n");
+            sendCommand("RETR");
+        } else {
+            TerminateThread(connection, 1);
+            CloseHandle(connection);
+            ui->printMessage(1, "Active mode using failed! Try passive mode.");
+            ui->printMessage(0, "PASV\n");
+            sendCommand("PASV");
+            passive = 1;
+            ui->setPassive(passive);
+            udtp->setPassive(passive);
+            udtp->setPort(getPort());
+            udtp->openConnection();
+            ui->printMessage(0, "RETR " + path + "\n");
+            sendCommand("RETR");
+        }
+    } else {
+        udtp->retrieve();
+    }
+    if (passive) {
+        udtp->closeConnection();
+    } else {
+        CloseHandle(connection);
+    }
 }
 
 /**
