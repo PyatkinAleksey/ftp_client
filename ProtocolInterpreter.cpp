@@ -190,6 +190,7 @@ void ProtocolInterpreter::openControlConnection() {
     WORD wVersionRequested;
     WSADATA wsaData;
     sockaddr_in clientAddress;
+    struct hostent *hostEntry;
     
     wVersionRequested = MAKEWORD(2, 2);
     result = WSAStartup(wVersionRequested, &wsaData);
@@ -197,6 +198,9 @@ void ProtocolInterpreter::openControlConnection() {
         ui->printMessage(2, "Connection failed!");
         return;
     }
+    // Получение IP-адреса по имени хоста, если требуется
+    hostEntry = gethostbyname(address.c_str());
+    address = inet_ntoa(*(struct in_addr*)*hostEntry->h_addr_list);
     // Создание сокета
     connectionSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (connectionSocket == INVALID_SOCKET) {
