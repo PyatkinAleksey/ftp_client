@@ -105,11 +105,35 @@ void ProtocolInterpreter::setPath(string path) {
 
 /**
  * Установить данные для команды PORT.
- * 
- * @param portData Данные для команды PORT (IP-адрес и порт).
  */
-void ProtocolInterpreter::setPortData(string portData) {
-    this->portData = portData;
+void ProtocolInterpreter::setPortData() {
+    WSADATA wsaData;
+    char hostName[255];
+    struct hostent *hostEntry;
+    char *ip;
+    int p1, p2;
+    char port1[5], port2[5];
+    
+    result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    gethostname(hostName, 255);
+    hostEntry = gethostbyname(hostName);
+    ip = inet_ntoa(*(struct in_addr*)*hostEntry->h_addr_list);
+    while (strstr(ip, ".")) {
+        *(strstr(ip, ".")) = ',';
+    }
+    portData = "";
+    portData.append(ip);
+    srand(time(NULL));
+    port = rand()%16382 + 49152; // Случайное число в диапазоне 49152-65534
+    p2 = port % 256;
+    p1 = (port - p2) / 256;
+    itoa(p1, port1, 10);
+    itoa(p2, port2, 10);
+    portData.append(",");
+    portData.append(port1);
+    portData.append(",");
+    portData.append(port2);
+    WSACleanup();
 }
 
 /**
@@ -122,16 +146,16 @@ void ProtocolInterpreter::setPassive(int passive) {
 }
 
 /**
- * Получение номера динамического порта из 227 отклика команды PASV.
+ * Получение и установка номера динамического порта из 227 отклика команды PASV.
  * 
  * @return Номер порта.
  */
-int ProtocolInterpreter::getPort() {
+void ProtocolInterpreter::setPort() {
     char *symbol;
     char num[5];
     int i;
-    int port = 0;
-    
+
+    port = 0;
     while (symbol = strstr(replyBuffer, ",")) {
         *symbol = '.';
     }
@@ -157,8 +181,6 @@ int ProtocolInterpreter::getPort() {
     }
     num[i] = 0;
     port += atoi(num);
-    
-    return port;
 }
 
 /**
@@ -351,6 +373,8 @@ void ProtocolInterpreter::sendStru() {
  * Отправка команды PORT.
  */
 void ProtocolInterpreter::sendPort() {
+    setPortData();
+    ui->printMessage(0, "PORT " + portData + "\n");
     commandBuffer = "PORT " + portData + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
@@ -386,9 +410,11 @@ void ProtocolInterpreter::sendRetr() {
     udtp->setLocalPath(localPath);
     udtp->setPassive(passive);
     if (passive) {
-        udtp->setPort(getPort());
+        setPort();
+        udtp->setPort(port);
         udtp->openConnection();
     } else {
+        udtp->setPort(port);
         connection = CreateThread(NULL, 0, startDTP, this, 0, NULL);
     }
     commandBuffer = "RETR " + path + "\r\n";
@@ -409,6 +435,7 @@ void ProtocolInterpreter::sendRetr() {
             passive = 0;
             ui->setPassive(passive);
             udtp->setPassive(passive);
+            udtp->setPort(port);
             connection = CreateThread(NULL, 0, startDTP, this, 0, NULL);
             ui->printMessage(0, "RETR " + path + "\n");
             sendCommand("RETR");
@@ -421,7 +448,8 @@ void ProtocolInterpreter::sendRetr() {
             passive = 1;
             ui->setPassive(passive);
             udtp->setPassive(passive);
-            udtp->setPort(getPort());
+            setPort();
+            udtp->setPort(port);
             udtp->openConnection();
             ui->printMessage(0, "RETR " + path + "\n");
             sendCommand("RETR");

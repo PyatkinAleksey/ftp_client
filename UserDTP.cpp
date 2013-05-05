@@ -110,7 +110,7 @@ void UserDTP::openConnection() {
         connected = 1;
     } else {
         dataAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
-        dataAddress.sin_port = htons(1174);
+        dataAddress.sin_port = htons(port);
         result = bind(dataSocket, (SOCKADDR*)&dataAddress, sizeof(dataAddress));
         if (result == SOCKET_ERROR) {
             ui->printMessage(2, "Socket error!");

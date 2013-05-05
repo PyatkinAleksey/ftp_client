@@ -30,7 +30,6 @@ class UserInterface {
         void setMode(string mode);                      // Установить режим передачи файлов
         void setStructure(string structure);            // Установить структуру файла
         void setPath(string path);                      // Установка пути к файлу
-        void setPortData(string portData);              // Установка данных для команды PORT
         void setPassive(int passive);                   // Установка флага использования пассивного режима
         void connect();                                 // Осуществление соединения через объект интерпретатора протокола
         void printMessage(int type, string message);    // Вывод сообщений на экран
@@ -44,6 +43,5 @@ class UserInterface {
         string mode;        // Режим передачи файлов
         string structure;   // Структура файла
         string path;        // Путь к файлу
-        string portData;    // Данные для команды PORT
         int passive;        // Флаг использования пассивного режима
 };

@@ -11,6 +11,8 @@
 #include <string.h>
 #include <windows.h>
 #include <winsock2.h>
+#include <stdlib.h>
+#include <time.h>
 #include "UserInterface.h"
 #include "UserDTP.h"
 
@@ -33,7 +35,8 @@ class ProtocolInterpreter {
         void setMode(string mode);              // Установка значения режима передачи файлов
         void setStructure(string structure);    // Установка структуры файла
         void setPath(string path);              // Установка пути к файлу
-        void setPortData(string portData);      // Установка данных для команды PORT
+        void setPortData();                     // Установка данных для команды PORT
+        void setPort();                         // Установка номера динамического порта из 227 отклика команды PASV
         void setPassive(int passive);           // Установка флага использования пассивного режима
         void sendCommand(string command);       // Отправка команды
         
@@ -51,6 +54,7 @@ class ProtocolInterpreter {
         string structure;                       // Структура файла
         string path;                            // Путь к файлу
         string portData;                        // Данные для команды PORT
+        int port;                               // Номер порта для соединения
         int passive;                            // Флаг использования пассивного режима
         SOCKET connectionSocket;                // Сокет управляющего соединения
         char replyBuffer[MAX_BUF_LEN];          // Буфер откликов
@@ -69,5 +73,4 @@ class ProtocolInterpreter {
         void sendQuit();                                // Отправка команды QUIT
         void sendNoop();                                // Отправка команды NOOP
         friend DWORD WINAPI startDTP(LPVOID parameter); // Поточная функция передачи файлов
-        int getPort();                                  // Получение номера динамического порта из 227 отклика команды PASV
 };

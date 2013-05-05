@@ -20,7 +20,6 @@ UserInterface::UserInterface() {
     setMode("S");
     setStructure("F");
     setPath("robots.txt");
-    setPortData("109,229,241,245,4,150");
     setPassive(0);
 }
 
@@ -97,15 +96,6 @@ void UserInterface::setPath(string path) {
 }
 
 /**
- * Установка данных для команды PORT.
- * 
- * @param portData Данные (IP-адрес и порт).
- */
-void UserInterface::setPortData(string portData) {
-    this->portData = portData;
-}
-
-/**
  * Установка использования пассивного режима.
  * 
  * @param passive Флаг использования пассивного режима (0 - активный, другое - пассивный).
@@ -139,8 +129,6 @@ void UserInterface::connect() {
         printMessage(0, "PASV\n");
         pi->sendCommand("PASV");
     } else {
-        pi->setPortData(portData);
-        printMessage(0, "PORT " + portData + "\n");
         pi->sendCommand("PORT");
     }
     pi->setPath(path);
