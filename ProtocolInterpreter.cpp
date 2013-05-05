@@ -459,8 +459,10 @@ void ProtocolInterpreter::sendRetr() {
             sendCommand("RETR");
         }
     } else {
-        udtp->retrieve();
-        printReply();
+        if (!strstr(replyBuffer, "550 ")) {
+            udtp->retrieve();
+            printReply();
+        }
     }
     if (passive) {
         udtp->closeConnection();
