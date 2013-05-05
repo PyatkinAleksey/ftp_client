@@ -13,7 +13,7 @@
  */
 UserInterface::UserInterface() {
     setLocalPath("");
-    setAddress("ftp.ru.debian.org");
+    setAddress("corvus.izmiran.rssi.ru");
     setUser("anonymous");
     setPassword("");
     setType("A N");
@@ -129,7 +129,7 @@ void UserInterface::connect() {
     pi->setPath(path);
     pi->setLocalPath(localPath);
     pi->sendCommand("RETR");
-    setPath("pub/OTHER/_robots.txt");
+    setPath("incoming/robots.txt");
     pi->setPath(path);
     pi->setPassive(passive);
     if (passive) {
@@ -138,6 +138,7 @@ void UserInterface::connect() {
         pi->sendCommand("PORT");
     }
     pi->sendCommand("STOR");
+    pi->sendCommand("DELE");
     pi->sendCommand("NOOP");
     pi->sendCommand("QUIT");
     pi->closeControlConnection();

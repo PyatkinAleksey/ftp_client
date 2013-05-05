@@ -227,7 +227,7 @@ void ProtocolInterpreter::openControlConnection() {
         result = recv(connectionSocket, replyBuffer, MAX_BUF_LEN, 0);
         if (result > 0) {
             ui->printMessage(0, replyBuffer);
-            if (strstr(replyBuffer, "220 ") != NULL) {
+            if (strstr(replyBuffer, "220 ")) {
                 // Приветствие получено
                 break;
             }
@@ -253,7 +253,9 @@ void ProtocolInterpreter::printReply() {
         result = recv(connectionSocket, replyBuffer, MAX_BUF_LEN, 0);
         if (result > 0) {
             ui->printMessage(0, replyBuffer);
-            break;
+            if (replyBuffer[3] == ' ') {
+                break;
+            }
         }
     } while(result > 0);
 }
@@ -282,6 +284,8 @@ void ProtocolInterpreter::sendCommand(string command) {
         sendRetr();
     } else if (command == "STOR") {
         sendStor();
+    } else if (command == "DELE") {
+        sendDele();
     } else if (command == "ABOR") {
         sendAbor();
     } else if (command == "QUIT") {
@@ -544,6 +548,22 @@ void ProtocolInterpreter::sendStor() {
         udtp->store();
         printReply();
     }
+}
+
+/**
+ * Отправка команды DELE.
+ */
+void ProtocolInterpreter::sendDele() {
+    ui->printMessage(0, "DELE " + path + "\n");
+    commandBuffer = "DELE " + path + "\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        ui->printMessage(2, "DELE sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return;
+    }
+    printReply();
 }
 
 /**
