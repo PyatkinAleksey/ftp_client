@@ -12,14 +12,14 @@
  * Вызов функций получения свойств соединения.
  */
 UserInterface::UserInterface() {
-    setLocalPath("D:\\");
-    setAddress("80.250.160.25");
+    setLocalPath("");
+    setAddress("217.147.35.6");
     setUser("anonymous");
     setPassword("");
     setType("A N");
     setMode("S");
     setStructure("F");
-    setPath("robots.txt");
+    setPath("pub/OTHER/robots.txt");
     setPassive(0);
 }
 
@@ -113,31 +113,33 @@ void UserInterface::connect() {
     pi->setUser(user);
     pi->setPassword(password);
     pi->openControlConnection();
-    printMessage(0, "USER " + user + "\n");
+    pi->sendCommand("PORT");
     pi->sendCommand("USER");
     pi->setType(type);
-    printMessage(0, "TYPE A N\n");
     pi->sendCommand("TYPE");
     pi->setMode(mode);
-    printMessage(0, "MODE S\n");
     pi->sendCommand("MODE");
     pi->setStructure(structure);
-    printMessage(0, "STRU F\n");
     pi->sendCommand("STRU");
     pi->setPassive(passive);
     if (passive) {
-        printMessage(0, "PASV\n");
         pi->sendCommand("PASV");
     } else {
         pi->sendCommand("PORT");
     }
     pi->setPath(path);
     pi->setLocalPath(localPath);
-    printMessage(0, "RETR " + path + "\n");
     pi->sendCommand("RETR");
-    printMessage(0, "NOOP\n");
+    setPath("pub/OTHER/_robots.txt");
+    pi->setPath(path);
+    pi->setPassive(passive);
+    if (passive) {
+        pi->sendCommand("PASV");
+    } else {
+        pi->sendCommand("PORT");
+    }
+    pi->sendCommand("STOR");
     pi->sendCommand("NOOP");
-    printMessage(0, "QUIT\n");
     pi->sendCommand("QUIT");
     pi->closeControlConnection();
 }

@@ -22,17 +22,18 @@ class UserDTP {
         void openConnection();              // Открытие соединения данных
         void closeConnection();             // Закрытие соединения по данным
         void retrieve();                    // Выполнение передачи файлов от сервера
+        void store();                       // Выполнение передачи файлов на сервер
         void setLocalPath(string path);     // Установка локального пути для сохранения файлов, получаемых от сервера
         void setAddress(string address);    // Установка адреса сервера
         void setPath(string path);          // Установка пути к файлу
         void setPort(int port);             // Установка порта для соединения по данным
         void setPassive(int passive);       // Установка флага использования пассивного режима
         int isConnected();                  // Проверка, осуществлено ли соединение по данным
-        SOCKET acceptSocket;    // Сокет для принятия входящих соединений
+        
     private:
         UserInterface *ui;      // Объект пользовательского интерфейса
         SOCKET dataSocket;      // Сокет соединения данных
-        
+        SOCKET acceptSocket;    // Сокет для принятия входящих соединений
         int result;             // Код результата последней операции
         string localPath;       // Локальный путь для сохранения файлов
         string address;         // Адрес сервера

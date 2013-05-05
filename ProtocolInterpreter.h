@@ -70,6 +70,7 @@ class ProtocolInterpreter {
         void sendPort();                                // Отправка команды PORT
         void sendPasv();                                // Отправка команды PASV
         void sendRetr();                                // Отправка команды RETR
+        void sendStor();                                // Отправка команды STOR
         void sendQuit();                                // Отправка команды QUIT
         void sendNoop();                                // Отправка команды NOOP
         friend DWORD WINAPI startDTP(LPVOID parameter); // Поточная функция передачи файлов

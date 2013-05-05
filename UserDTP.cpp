@@ -80,7 +80,7 @@ void UserDTP::openConnection() {
     sockaddr_in dataAddress;
     
     if (isConnected()) {
-        return;
+        closeConnection();
     }
     result = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (result != NO_ERROR) {
@@ -145,6 +145,7 @@ void UserDTP::openConnection() {
 void UserDTP::closeConnection() {
     closesocket(dataSocket);
     WSACleanup();
+    connected = 0;
 }
 
 /**
@@ -167,4 +168,25 @@ void UserDTP::retrieve() {
     } while(result > 0);
     stream.close();
     ui->printMessage(1, "Transfer completed!\n" + path + " -> " + fullPath);
+}
+
+/**
+ * Выполнение передачи файлов на сервер.
+ */
+void UserDTP::store() {
+    ifstream stream;
+    string buffer;
+    
+    stream.open(path.c_str(), ifstream::in);
+    while (getline(stream, buffer)) {
+        buffer.append("\n");
+        result = send(dataSocket, buffer.c_str(), buffer.length(), 0);
+        if (result <= 0) {
+            ui->printMessage(2, "Transfer error!");
+            return;
+        }
+    }
+    stream.close();
+    closeConnection();
+    ui->printMessage(1, "Transfer sompleted!");
 }

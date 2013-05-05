@@ -280,6 +280,8 @@ void ProtocolInterpreter::sendCommand(string command) {
         sendPasv();
     } else if (command == "RETR") {
         sendRetr();
+    } else if (command == "STOR") {
+        sendStor();
     } else if (command == "QUIT") {
         sendQuit();
     } else if (command == "NOOP") {
@@ -293,6 +295,7 @@ void ProtocolInterpreter::sendCommand(string command) {
  * Отправка команды USER.
  */
 void ProtocolInterpreter::sendUser() {
+    ui->printMessage(0, "USER " + user + "\n");
     commandBuffer = "USER " + user + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
@@ -317,6 +320,7 @@ void ProtocolInterpreter::sendPass() {
         cin >> password;
         ui->setPassword(password);
     }
+    ui->printMessage(0, "PASS " + password + "\n");
     commandBuffer = "PASS " + password + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
@@ -326,12 +330,16 @@ void ProtocolInterpreter::sendPass() {
         return;
     }
     printReply();
+    if (strstr(replyBuffer, "530 ")) { // Превышено максимальное кол-во возможных соединений
+        exit(1);
+    }
 }
 
 /**
  * Отправка команды TYPE.
  */
 void ProtocolInterpreter::sendType() {
+    ui->printMessage(0, "TYPE " + type + "\n");
     commandBuffer = "TYPE " + type + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
@@ -347,6 +355,7 @@ void ProtocolInterpreter::sendType() {
  * Отправка команды MODE.
  */
 void ProtocolInterpreter::sendMode() {
+    ui->printMessage(0, "MODE " + mode + "\n");
     commandBuffer = "MODE " + mode + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
@@ -362,6 +371,7 @@ void ProtocolInterpreter::sendMode() {
  * Отправка команды STRU.
  */
 void ProtocolInterpreter::sendStru() {
+    ui->printMessage(0, "STRU " + structure + "\n");
     commandBuffer = "STRU " + structure + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
@@ -394,6 +404,7 @@ void ProtocolInterpreter::sendPort() {
  * Отправка команды PASV.
  */
 void ProtocolInterpreter::sendPasv() {
+    ui->printMessage(0, "PASV\n");
     commandBuffer = "PASV\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
@@ -414,13 +425,19 @@ void ProtocolInterpreter::sendRetr() {
     udtp->setLocalPath(localPath);
     udtp->setPassive(passive);
     if (passive) {
-        setPort();
-        udtp->setPort(port);
-        udtp->openConnection();
+        if (strstr(replyBuffer, "227 ")) {
+            setPort();
+            udtp->setPort(port);
+            udtp->openConnection();
+        } else {
+            ui->printMessage(2, "You should run PASV command first.");
+            return;
+        }
     } else {
         udtp->setPort(port);
         connection = CreateThread(NULL, 0, startDTP, this, 0, NULL);
     }
+    ui->printMessage(0, "RETR " + path + "\n");
     commandBuffer = "RETR " + path + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
@@ -434,20 +451,17 @@ void ProtocolInterpreter::sendRetr() {
         if (passive) {
             udtp->closeConnection();
             ui->printMessage(1, "Passive mode using failed! Try active mode.");
-            ui->printMessage(0, "PORT " + portData + "\n");
             sendCommand("PORT");
             passive = 0;
             ui->setPassive(passive);
             udtp->setPassive(passive);
             udtp->setPort(port);
             connection = CreateThread(NULL, 0, startDTP, this, 0, NULL);
-            ui->printMessage(0, "RETR " + path + "\n");
             sendCommand("RETR");
         } else {
             TerminateThread(connection, 1);
             CloseHandle(connection);
             ui->printMessage(1, "Active mode using failed! Try passive mode.");
-            ui->printMessage(0, "PASV\n");
             sendCommand("PASV");
             passive = 1;
             ui->setPassive(passive);
@@ -455,7 +469,6 @@ void ProtocolInterpreter::sendRetr() {
             setPort();
             udtp->setPort(port);
             udtp->openConnection();
-            ui->printMessage(0, "RETR " + path + "\n");
             sendCommand("RETR");
         }
     } else {
@@ -466,8 +479,68 @@ void ProtocolInterpreter::sendRetr() {
     }
     if (passive) {
         udtp->closeConnection();
+    }
+}
+
+/**
+ * Отправка команды STOR.
+ */
+void ProtocolInterpreter::sendStor() {
+    udtp->setAddress(address);
+    udtp->setPath(path);
+    udtp->setPassive(passive);
+    if (passive) {
+        if (strstr(replyBuffer, "227 ")) {
+            setPort();
+            udtp->setPort(port);
+            udtp->openConnection();
+        } else {
+            ui->printMessage(2, "You should run PASV command first.");
+            return;
+        }
     } else {
-        CloseHandle(connection);
+        udtp->setPort(port);
+        connection = CreateThread(NULL, 0, startDTP, this, 0, NULL);
+    }
+    ui->printMessage(0, "STOR " + path + "\n");
+    commandBuffer = "STOR " + path + "\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        ui->printMessage(2, "STOR sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return;
+    }
+    printReply();
+    if (strstr(replyBuffer, "550 ") || strstr(replyBuffer, "553 ")) { // Отсутствуют права
+        return;
+    } else if (strstr(replyBuffer, "425 ")) {
+        if (passive) {
+            udtp->closeConnection();
+            ui->printMessage(1, "Passive mode using failed! Try active mode.");
+            sendCommand("PORT");
+            passive = 0;
+            ui->setPassive(passive);
+            udtp->setPassive(passive);
+            udtp->setPort(port);
+            connection = CreateThread(NULL, 0, startDTP, this, 0, NULL);
+            sendCommand("STOR");
+        } else {
+            TerminateThread(connection, 1);
+            CloseHandle(connection);
+            ui->printMessage(1, "Active mode using failed! Try passive mode.");
+            sendCommand("PASV");
+            passive = 1;
+            ui->setPassive(passive);
+            udtp->setPassive(passive);
+            setPort();
+            udtp->setPort(port);
+            udtp->openConnection();
+            sendCommand("STOR");
+        }
+    } else {
+        udtp->store();
+        printReply();
     }
 }
 
@@ -475,6 +548,7 @@ void ProtocolInterpreter::sendRetr() {
  * Отправка команды QUIT.
  */
 void ProtocolInterpreter::sendQuit() {
+    ui->printMessage(0, "QUIT\n");
     commandBuffer = "QUIT\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
@@ -490,6 +564,7 @@ void ProtocolInterpreter::sendQuit() {
  * Отправка команды NOOP.
  */
 void ProtocolInterpreter::sendNoop() {
+    ui->printMessage(0, "NOOP\n");
     commandBuffer = "NOOP\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
