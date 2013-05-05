@@ -282,6 +282,8 @@ void ProtocolInterpreter::sendCommand(string command) {
         sendRetr();
     } else if (command == "STOR") {
         sendStor();
+    } else if (command == "ABOR") {
+        sendAbor();
     } else if (command == "QUIT") {
         sendQuit();
     } else if (command == "NOOP") {
@@ -540,6 +542,25 @@ void ProtocolInterpreter::sendStor() {
         }
     } else {
         udtp->store();
+        printReply();
+    }
+}
+
+/**
+ * Отправка команды ABOR.
+ */
+void ProtocolInterpreter::sendAbor() {
+    ui->printMessage(0, "ABOR\n");
+    commandBuffer = "ABOR\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        ui->printMessage(2, "ABOR sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return;
+    }
+    printReply();
+    if (strstr(replyBuffer, "426 ")) { // Ненормальное завершение команды (вернется еще один отклик)
         printReply();
     }
 }

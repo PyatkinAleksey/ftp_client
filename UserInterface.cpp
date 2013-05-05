@@ -13,14 +13,14 @@
  */
 UserInterface::UserInterface() {
     setLocalPath("");
-    setAddress("217.147.35.6");
+    setAddress("ftp.ru.debian.org");
     setUser("anonymous");
     setPassword("");
     setType("A N");
     setMode("S");
     setStructure("F");
-    setPath("pub/OTHER/robots.txt");
-    setPassive(0);
+    setPath("robots.txt");
+    setPassive(1);
 }
 
 /**
@@ -113,7 +113,6 @@ void UserInterface::connect() {
     pi->setUser(user);
     pi->setPassword(password);
     pi->openControlConnection();
-    pi->sendCommand("PORT");
     pi->sendCommand("USER");
     pi->setType(type);
     pi->sendCommand("TYPE");
