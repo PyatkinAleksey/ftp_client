@@ -21,7 +21,6 @@ using namespace std;
  */
 class UserInterface {
     public:
-        UserInterface();                                // Вызов функций получения свойств соединения
         void setLocalPath(string path);                 // Установка локального адреса для сохранения файлов
         void setAddress(string address);                // Установка адреса сервера
         void setUser(string user);                      // Установка имени пользователя

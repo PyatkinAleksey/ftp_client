@@ -9,21 +9,6 @@
 #include "ProtocolInterpreter.h"
 
 /**
- * Вызов функций получения свойств соединения.
- */
-UserInterface::UserInterface() {
-    setLocalPath("");
-    setAddress("corvus.izmiran.rssi.ru");
-    setUser("anonymous");
-    setPassword("");
-    setType("A N");
-    setMode("S");
-    setStructure("F");
-    setPath("robots.txt");
-    setPassive(1);
-}
-
-/**
  * Установка локального адреса для сохранения файлов, получаемых от FTP-сервера.
  * 
  * @param path Путь.
