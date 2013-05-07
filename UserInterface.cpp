@@ -6,7 +6,6 @@
  */
 
 #include "UserInterface.h"
-#include "ProtocolInterpreter.h"
 
 /**
  * Установка локального адреса для сохранения файлов, получаемых от FTP-сервера.
@@ -93,7 +92,11 @@ void UserInterface::setPassive(int passive) {
  * Осуществление соединения, посредством использования интерпретатора протокола.
  */
 void UserInterface::connect() {
-    ProtocolInterpreter *pi = new ProtocolInterpreter(this);
+    ProtocolInterpreter *pi; // Указатель на объект интерпретатора протокола
+    char tmp[1024];
+    string command;
+    pi = new ProtocolInterpreter(this);
+    
     pi->setAddress(address);
     pi->setUser(user);
     pi->setPassword(password);
@@ -105,28 +108,51 @@ void UserInterface::connect() {
     pi->sendCommand("MODE");
     pi->setStructure(structure);
     pi->sendCommand("STRU");
-    pi->setPassive(passive);
-    if (passive) {
-        pi->sendCommand("PASV");
-    } else {
-        pi->sendCommand("PORT");
-    }
-    pi->setPath(path);
-    pi->setLocalPath(localPath);
-    pi->sendCommand("RETR");
-    setPath("incoming/robots.txt");
-    pi->setPath(path);
-    pi->setPassive(passive);
-    if (passive) {
-        pi->sendCommand("PASV");
-    } else {
-        pi->sendCommand("PORT");
-    }
-    pi->sendCommand("STOR");
-    pi->sendCommand("DELE");
-    pi->sendCommand("NOOP");
+    do {
+        cout << "Please, enter your command:" << endl;
+        cin.getline(tmp, 1024);
+        command = tmp;
+        doCommand(command);
+    } while (command != "quit");
+
+//    setPath("incoming/robots.txt");
+//    pi->setPath(path);
+//    pi->setPassive(passive);
+//    if (passive) {
+//        pi->sendCommand("PASV");
+//    } else {
+//        pi->sendCommand("PORT");
+//    }
+//    pi->sendCommand("STOR");
+//    pi->sendCommand("DELE");
+//    pi->sendCommand("NOOP");
     pi->sendCommand("QUIT");
     pi->closeControlConnection();
+}
+
+/**
+ * Выполнение команд пользовательского интерфейса.
+ * 
+ * @param command Команда.
+ */
+void UserInterface::doCommand(string command) {
+    path = command.substr(4, command.substr(4).find(" "));
+    return;
+    if (command.substr(0, 3) == "get") {
+        pi->setPassive(passive);
+        if (passive) {
+            pi->sendCommand("PASV");
+        } else {
+            pi->sendCommand("PORT");
+        }
+        path = command.substr(4, command.substr(4).find(" "));
+        pi->setPath(path);
+        pi->setLocalPath(localPath);
+        pi->sendCommand("RETR");
+    } else if (command == "help") {
+        cout << "You can use following commands:" << endl;
+        cout << "get <path> - to get a file" << endl;
+    }
 }
 
 /**

@@ -8,7 +8,6 @@
 #include <winsock2.h>
 
 #include "UserDTP.h"
-#include "UserInterface.h"
 
 /**
  * Инициализация пользовательского процесса передачи данных.

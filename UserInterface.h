@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string.h>
 #include <stdio.h>
+#include "ProtocolInterpreter.h"
 
 using namespace std;
 
@@ -31,8 +32,9 @@ class UserInterface {
         void setPath(string path);                      // Установка пути к файлу
         void setPassive(int passive);                   // Установка флага использования пассивного режима
         void connect();                                 // Осуществление соединения через объект интерпретатора протокола
+        void doCommand(string command);                 // Выполнение команд пользовательского интерфейса
         void printMessage(int type, string message);    // Вывод сообщений на экран
-
+        
     private:
         string localPath;   // Локальный адрес для сохранения файлов
         string address;     // Адрес сервера
