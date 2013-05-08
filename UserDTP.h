@@ -8,7 +8,7 @@
 #pragma once
 
 #include <fstream>
-#include "UserInterface.h"
+#include "Service.h"
 
 using namespace std;
 
@@ -18,7 +18,8 @@ using namespace std;
  */
 class UserDTP {
     public:
-        UserDTP(UserInterface *ui);         // Инициализация пользовательского процесса передачи данных
+        UserDTP();                          // Инициализация пользовательского процесса передачи данных
+        ~UserDTP();                         // Освобождение ресурсов
         void openConnection();              // Открытие соединения данных
         void closeConnection();             // Закрытие соединения по данным
         void retrieve();                    // Выполнение передачи файлов от сервера
@@ -31,7 +32,7 @@ class UserDTP {
         int isConnected();                  // Проверка, осуществлено ли соединение по данным
         
     private:
-        UserInterface *ui;      // Объект пользовательского интерфейса
+        Service *service;       // Объект сервисного класса
         SOCKET dataSocket;      // Сокет соединения данных
         SOCKET acceptSocket;    // Сокет для принятия входящих соединений
         int result;             // Код результата последней операции

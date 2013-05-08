@@ -12,8 +12,8 @@
 /**
  * Инициализация пользовательского процесса передачи данных.
  */
-UserDTP::UserDTP(UserInterface *ui) {
-    this->ui = ui;
+UserDTP::UserDTP() {
+    service = new Service();
     this->connected = 0;
 }
 
@@ -83,12 +83,12 @@ void UserDTP::openConnection() {
     }
     result = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (result != NO_ERROR) {
-        ui->printMessage(2, "Connection failed!");
+        service->printMessage(2, "Connection failed!");
         return;
     }
     dataSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (dataSocket == INVALID_SOCKET) {
-        ui->printMessage(2, "Invalid socket!");
+        service->printMessage(2, "Invalid socket!");
         WSACleanup();
         return;
     }
@@ -98,10 +98,10 @@ void UserDTP::openConnection() {
         dataAddress.sin_port = htons(port);
         result = connect(dataSocket, (SOCKADDR*)&dataAddress, sizeof(dataAddress));
         if (result == SOCKET_ERROR) {
-            ui->printMessage(2, "Socket error!");
+            service->printMessage(2, "Socket error!");
             result = closesocket(dataSocket);
             if (result == SOCKET_ERROR) {
-                ui->printMessage(2, "Socket error!");
+                service->printMessage(2, "Socket error!");
             }
             WSACleanup();
             return;
@@ -112,23 +112,23 @@ void UserDTP::openConnection() {
         dataAddress.sin_port = htons(port);
         result = bind(dataSocket, (SOCKADDR*)&dataAddress, sizeof(dataAddress));
         if (result == SOCKET_ERROR) {
-            ui->printMessage(2, "Socket error!");
+            service->printMessage(2, "Socket error!");
             result = closesocket(dataSocket);
             if (result == SOCKET_ERROR) {
-                ui->printMessage(2, "Socket error!");
+                service->printMessage(2, "Socket error!");
             }
             WSACleanup();
             return;
         }
         if (listen(dataSocket, SOMAXCONN) == SOCKET_ERROR) {
-            ui->printMessage(2, "Socket error!");
+            service->printMessage(2, "Socket error!");
             closesocket(dataSocket);
             WSACleanup();
             return;
         }
         acceptSocket = accept(dataSocket, NULL, NULL);
         if (acceptSocket == INVALID_SOCKET) {
-            ui->printMessage(2, "Invalid accept socket!");
+            service->printMessage(2, "Invalid accept socket!");
             closesocket(dataSocket);
             WSACleanup();
             return;
@@ -160,13 +160,13 @@ void UserDTP::retrieve() {
         result = recv(dataSocket, buffer, 4096, 0);
         if (result > 0) {
             if (strstr(buffer, "226 ")) {
-                ui->printMessage(0, buffer);
+                service->printMessage(0, buffer);
             }
             stream << buffer;
         }
     } while(result > 0);
     stream.close();
-    ui->printMessage(1, "Transfer completed!\n" + path + " -> " + fullPath);
+    service->printMessage(1, "Transfer completed!\n" + path + " -> " + fullPath);
 }
 
 /**
@@ -181,11 +181,15 @@ void UserDTP::store() {
         buffer.append("\n");
         result = send(dataSocket, buffer.c_str(), buffer.length(), 0);
         if (result <= 0) {
-            ui->printMessage(2, "Transfer error!");
+            service->printMessage(2, "Transfer error!");
             return;
         }
     }
     stream.close();
     closeConnection();
-    ui->printMessage(1, "Transfer sompleted!");
+    service->printMessage(1, "Transfer sompleted!");
+}
+
+UserDTP::~UserDTP() {
+    delete service;
 }

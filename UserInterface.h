@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string.h>
 #include <stdio.h>
+#include "Service.h"
 #include "ProtocolInterpreter.h"
 
 using namespace std;
@@ -22,27 +23,30 @@ using namespace std;
  */
 class UserInterface {
     public:
-        void setLocalPath(string path);                 // Установка локального адреса для сохранения файлов
-        void setAddress(string address);                // Установка адреса сервера
-        void setUser(string user);                      // Установка имени пользователя
-        void setPassword(string password);              // Установить пароль
-        void setType(string type);                      // Установить тип представления файлов
-        void setMode(string mode);                      // Установить режим передачи файлов
-        void setStructure(string structure);            // Установить структуру файла
-        void setPath(string path);                      // Установка пути к файлу
-        void setPassive(int passive);                   // Установка флага использования пассивного режима
-        void connect();                                 // Осуществление соединения через объект интерпретатора протокола
-        void doCommand(string command);                 // Выполнение команд пользовательского интерфейса
-        void printMessage(int type, string message);    // Вывод сообщений на экран
+        UserInterface();                        // Инициализация класса
+        ~UserInterface();                       // Освобождение ресурсов
+        void setLocalPath(string path);         // Установка локального адреса для сохранения файлов
+        void setAddress(string address);        // Установка адреса сервера
+        void setUser(string user);              // Установка имени пользователя
+        void setPassword(string password);      // Установить пароль
+        void setType(string type);              // Установить тип представления файлов
+        void setMode(string mode);              // Установить режим передачи файлов
+        void setStructure(string structure);    // Установить структуру файла
+        void setPath(string path);              // Установка пути к файлу
+        void setPassive(int passive);           // Установка флага использования пассивного режима
+        void connect();                         // Осуществление соединения через объект интерпретатора протокола
+        void doCommand(string command);         // Выполнение команд пользовательского интерфейса
         
     private:
-        string localPath;   // Локальный адрес для сохранения файлов
-        string address;     // Адрес сервера
-        string user;        // Имя пользователя
-        string password;    // Пароль
-        string type;        // Тип представления файлов
-        string mode;        // Режим передачи файлов
-        string structure;   // Структура файла
-        string path;        // Путь к файлу
-        int passive;        // Флаг использования пассивного режима
+        Service *service;           // Объект сервисного класса
+        ProtocolInterpreter *pi;    // Объект интерпретатора протокола
+        string localPath;           // Локальный адрес для сохранения файлов
+        string address;             // Адрес сервера
+        string user;                // Имя пользователя
+        string password;            // Пароль
+        string type;                // Тип представления файлов
+        string mode;                // Режим передачи файлов
+        string structure;           // Структура файла
+        string path;                // Путь к файлу
+        int passive;                // Флаг использования пассивного режима
 };

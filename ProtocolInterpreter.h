@@ -13,7 +13,7 @@
 #include <winsock2.h>
 #include <stdlib.h>
 #include <time.h>
-#include "UserInterface.h"
+#include "Service.h"
 #include "UserDTP.h"
 
 using namespace std;
@@ -24,7 +24,8 @@ using namespace std;
  */
 class ProtocolInterpreter {
     public:
-        ProtocolInterpreter(UserInterface *ui); // Инициализация интерпретатора протокола
+        ProtocolInterpreter();                  // Инициализация интерпретатора протокола
+        ~ProtocolInterpreter();                 // Освобождение ресурсов
         void openControlConnection();           // Открытие управляющего соединения
         void closeControlConnection();          // Закрытие управляющего соединения
         void setLocalPath(string path);         // Установка локального пути для передачи файлов
@@ -42,7 +43,7 @@ class ProtocolInterpreter {
         
     private:
         static const int MAX_BUF_LEN = 4096;    // Максимальный размер буфера
-        UserInterface *ui;                      // Объект пользовательского интерфейса
+        Service *service;                       // Объект сервисного класса
         UserDTP *udtp;                          // Объект пользовательского процесса передачи данных
         HANDLE connection;                      // Хэндлер потока соединения данных
         string localPath;                       // Локальный путь для сохранения передаваемых файлов

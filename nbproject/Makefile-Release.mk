@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/ProtocolInterpreter.o \
+	${OBJECTDIR}/Service.o \
 	${OBJECTDIR}/UserDTP.o \
 	${OBJECTDIR}/UserInterface.o \
 	${OBJECTDIR}/main.o
@@ -69,6 +70,11 @@ ${OBJECTDIR}/ProtocolInterpreter.o: ProtocolInterpreter.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/ProtocolInterpreter.o ProtocolInterpreter.cpp
+
+${OBJECTDIR}/Service.o: Service.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/Service.o Service.cpp
 
 ${OBJECTDIR}/UserDTP.o: UserDTP.cpp 
 	${MKDIR} -p ${OBJECTDIR}

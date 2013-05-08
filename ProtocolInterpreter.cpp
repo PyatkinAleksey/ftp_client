@@ -26,9 +26,9 @@ DWORD WINAPI startDTP(LPVOID parameter) {
  * 
  * @param ui Объект пользовательского интерфейса.
  */
-ProtocolInterpreter::ProtocolInterpreter(UserInterface *ui) {
-    this->ui = ui;
-    this->udtp = new UserDTP(ui);
+ProtocolInterpreter::ProtocolInterpreter() {
+    this->service = new Service();
+    this->udtp = new UserDTP();
 }
 
 /**
@@ -195,7 +195,7 @@ void ProtocolInterpreter::openControlConnection() {
     wVersionRequested = MAKEWORD(2, 2);
     result = WSAStartup(wVersionRequested, &wsaData);
     if (result != NO_ERROR) {
-        ui->printMessage(2, "Connection failed!");
+        service->printMessage(2, "Connection failed!");
         return;
     }
     // Получение IP-адреса по имени хоста, если требуется
@@ -204,7 +204,7 @@ void ProtocolInterpreter::openControlConnection() {
     // Создание сокета
     connectionSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (connectionSocket == INVALID_SOCKET) {
-        ui->printMessage(2, "Invalid socket!");
+        service->printMessage(2, "Invalid socket!");
         WSACleanup();
         return;
     }
@@ -214,10 +214,10 @@ void ProtocolInterpreter::openControlConnection() {
     clientAddress.sin_port = htons(21);
     result = connect(connectionSocket, (SOCKADDR*)&clientAddress, sizeof(clientAddress));
     if (result == SOCKET_ERROR) {
-        ui->printMessage(2, "Connection error!");
+        service->printMessage(2, "Connection error!");
         result = closesocket(connectionSocket);
         if (result == SOCKET_ERROR) {
-            ui->printMessage(2, "Close socket error!");
+            service->printMessage(2, "Close socket error!");
         }
         WSACleanup();
         return;
@@ -226,7 +226,7 @@ void ProtocolInterpreter::openControlConnection() {
     do {
         result = recv(connectionSocket, replyBuffer, MAX_BUF_LEN, 0);
         if (result > 0) {
-            ui->printMessage(0, replyBuffer);
+            service->printMessage(0, replyBuffer);
             if (strstr(replyBuffer, "220 ")) {
                 // Приветствие получено
                 break;
@@ -252,7 +252,7 @@ void ProtocolInterpreter::printReply() {
     do {
         result = recv(connectionSocket, replyBuffer, MAX_BUF_LEN, 0);
         if (result > 0) {
-            ui->printMessage(0, replyBuffer);
+            service->printMessage(0, replyBuffer);
             if (replyBuffer[3] == ' ') {
                 break;
             }
@@ -293,7 +293,7 @@ void ProtocolInterpreter::sendCommand(string command) {
     } else if (command == "NOOP") {
         sendNoop();
     } else {
-        ui->printMessage(1, "Unknown command!");
+        service->printMessage(1, "Unknown command!");
     }
 }
 
@@ -301,18 +301,18 @@ void ProtocolInterpreter::sendCommand(string command) {
  * Отправка команды USER.
  */
 void ProtocolInterpreter::sendUser() {
-    ui->printMessage(0, "USER " + user + "\n");
+    service->printMessage(0, "USER " + user + "\n");
     commandBuffer = "USER " + user + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
-        ui->printMessage(2, "USER sending error!");
+        service->printMessage(2, "USER sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
     }
     printReply();
     if (strstr(replyBuffer, "331 ")) { // Требуется ввод дополнительной информации (например, E-Mail-адрес)
-        ui->printMessage(0, "PASS ***\n");
+        service->printMessage(0, "PASS ***\n");
         sendCommand("PASS");
     }
 }
@@ -322,15 +322,14 @@ void ProtocolInterpreter::sendUser() {
  */
 void ProtocolInterpreter::sendPass() {
     if (password == "") {
-        ui->printMessage(1, "Enter your password:");
+        service->printMessage(1, "Enter your password:");
         cin >> password;
-        ui->setPassword(password);
     }
-    ui->printMessage(0, "PASS " + password + "\n");
+    service->printMessage(0, "PASS " + password + "\n");
     commandBuffer = "PASS " + password + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
-        ui->printMessage(2, "Additional information sending error!");
+        service->printMessage(2, "Additional information sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
@@ -345,11 +344,11 @@ void ProtocolInterpreter::sendPass() {
  * Отправка команды TYPE.
  */
 void ProtocolInterpreter::sendType() {
-    ui->printMessage(0, "TYPE " + type + "\n");
+    service->printMessage(0, "TYPE " + type + "\n");
     commandBuffer = "TYPE " + type + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
-        ui->printMessage(2, "TYPE sending error!");
+        service->printMessage(2, "TYPE sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
@@ -361,11 +360,11 @@ void ProtocolInterpreter::sendType() {
  * Отправка команды MODE.
  */
 void ProtocolInterpreter::sendMode() {
-    ui->printMessage(0, "MODE " + mode + "\n");
+    service->printMessage(0, "MODE " + mode + "\n");
     commandBuffer = "MODE " + mode + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
-        ui->printMessage(2, "MODE sending error!");
+        service->printMessage(2, "MODE sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
@@ -377,11 +376,11 @@ void ProtocolInterpreter::sendMode() {
  * Отправка команды STRU.
  */
 void ProtocolInterpreter::sendStru() {
-    ui->printMessage(0, "STRU " + structure + "\n");
+    service->printMessage(0, "STRU " + structure + "\n");
     commandBuffer = "STRU " + structure + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
-        ui->printMessage(2, "STRU sending error!");
+        service->printMessage(2, "STRU sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
@@ -394,11 +393,11 @@ void ProtocolInterpreter::sendStru() {
  */
 void ProtocolInterpreter::sendPort() {
     setPortData();
-    ui->printMessage(0, "PORT " + portData + "\n");
+    service->printMessage(0, "PORT " + portData + "\n");
     commandBuffer = "PORT " + portData + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
-        ui->printMessage(2, "PORT sending error!");
+        service->printMessage(2, "PORT sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
@@ -410,11 +409,11 @@ void ProtocolInterpreter::sendPort() {
  * Отправка команды PASV.
  */
 void ProtocolInterpreter::sendPasv() {
-    ui->printMessage(0, "PASV\n");
+    service->printMessage(0, "PASV\n");
     commandBuffer = "PASV\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
-        ui->printMessage(2, "PASV sending error!");
+        service->printMessage(2, "PASV sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
@@ -436,18 +435,18 @@ void ProtocolInterpreter::sendRetr() {
             udtp->setPort(port);
             udtp->openConnection();
         } else {
-            ui->printMessage(2, "You should run PASV command first.");
+            service->printMessage(2, "You should run PASV command first.");
             return;
         }
     } else {
         udtp->setPort(port);
         connection = CreateThread(NULL, 0, startDTP, this, 0, NULL);
     }
-    ui->printMessage(0, "RETR " + path + "\n");
+    service->printMessage(0, "RETR " + path + "\n");
     commandBuffer = "RETR " + path + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
-        ui->printMessage(2, "RETR sending error!");
+        service->printMessage(2, "RETR sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
@@ -456,10 +455,9 @@ void ProtocolInterpreter::sendRetr() {
     if (strstr(replyBuffer, "425 ")) {
         if (passive) {
             udtp->closeConnection();
-            ui->printMessage(1, "Passive mode using failed! Try active mode.");
+            service->printMessage(1, "Passive mode using failed! Try active mode.");
             sendCommand("PORT");
             passive = 0;
-            ui->setPassive(passive);
             udtp->setPassive(passive);
             udtp->setPort(port);
             connection = CreateThread(NULL, 0, startDTP, this, 0, NULL);
@@ -467,10 +465,9 @@ void ProtocolInterpreter::sendRetr() {
         } else {
             TerminateThread(connection, 1);
             CloseHandle(connection);
-            ui->printMessage(1, "Active mode using failed! Try passive mode.");
+            service->printMessage(1, "Active mode using failed! Try passive mode.");
             sendCommand("PASV");
             passive = 1;
-            ui->setPassive(passive);
             udtp->setPassive(passive);
             setPort();
             udtp->setPort(port);
@@ -501,18 +498,18 @@ void ProtocolInterpreter::sendStor() {
             udtp->setPort(port);
             udtp->openConnection();
         } else {
-            ui->printMessage(2, "You should run PASV command first.");
+            service->printMessage(2, "You should run PASV command first.");
             return;
         }
     } else {
         udtp->setPort(port);
         connection = CreateThread(NULL, 0, startDTP, this, 0, NULL);
     }
-    ui->printMessage(0, "STOR " + path + "\n");
+    service->printMessage(0, "STOR " + path + "\n");
     commandBuffer = "STOR " + path + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
-        ui->printMessage(2, "STOR sending error!");
+        service->printMessage(2, "STOR sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
@@ -523,10 +520,9 @@ void ProtocolInterpreter::sendStor() {
     } else if (strstr(replyBuffer, "425 ")) {
         if (passive) {
             udtp->closeConnection();
-            ui->printMessage(1, "Passive mode using failed! Try active mode.");
+            service->printMessage(1, "Passive mode using failed! Try active mode.");
             sendCommand("PORT");
             passive = 0;
-            ui->setPassive(passive);
             udtp->setPassive(passive);
             udtp->setPort(port);
             connection = CreateThread(NULL, 0, startDTP, this, 0, NULL);
@@ -534,10 +530,9 @@ void ProtocolInterpreter::sendStor() {
         } else {
             TerminateThread(connection, 1);
             CloseHandle(connection);
-            ui->printMessage(1, "Active mode using failed! Try passive mode.");
+            service->printMessage(1, "Active mode using failed! Try passive mode.");
             sendCommand("PASV");
             passive = 1;
-            ui->setPassive(passive);
             udtp->setPassive(passive);
             setPort();
             udtp->setPort(port);
@@ -554,11 +549,11 @@ void ProtocolInterpreter::sendStor() {
  * Отправка команды DELE.
  */
 void ProtocolInterpreter::sendDele() {
-    ui->printMessage(0, "DELE " + path + "\n");
+    service->printMessage(0, "DELE " + path + "\n");
     commandBuffer = "DELE " + path + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
-        ui->printMessage(2, "DELE sending error!");
+        service->printMessage(2, "DELE sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
@@ -570,11 +565,11 @@ void ProtocolInterpreter::sendDele() {
  * Отправка команды ABOR.
  */
 void ProtocolInterpreter::sendAbor() {
-    ui->printMessage(0, "ABOR\n");
+    service->printMessage(0, "ABOR\n");
     commandBuffer = "ABOR\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
-        ui->printMessage(2, "ABOR sending error!");
+        service->printMessage(2, "ABOR sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
@@ -589,11 +584,11 @@ void ProtocolInterpreter::sendAbor() {
  * Отправка команды QUIT.
  */
 void ProtocolInterpreter::sendQuit() {
-    ui->printMessage(0, "QUIT\n");
+    service->printMessage(0, "QUIT\n");
     commandBuffer = "QUIT\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
-        ui->printMessage(2, "QUIT sending error!");
+        service->printMessage(2, "QUIT sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
@@ -605,14 +600,19 @@ void ProtocolInterpreter::sendQuit() {
  * Отправка команды NOOP.
  */
 void ProtocolInterpreter::sendNoop() {
-    ui->printMessage(0, "NOOP\n");
+    service->printMessage(0, "NOOP\n");
     commandBuffer = "NOOP\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
-        ui->printMessage(2, "NOOP sending error!");
+        service->printMessage(2, "NOOP sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;
     }
     printReply();
+}
+
+ProtocolInterpreter::~ProtocolInterpreter() {
+    delete service;
+    delete udtp;
 }

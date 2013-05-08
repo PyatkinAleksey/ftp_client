@@ -8,6 +8,14 @@
 #include "UserInterface.h"
 
 /**
+ * Инициализация класса, получение свойств из конфигурационного файла и т.д.
+ */
+UserInterface::UserInterface() {
+    service = new Service();
+    pi = new ProtocolInterpreter();
+}
+
+/**
  * Установка локального адреса для сохранения файлов, получаемых от FTP-сервера.
  * 
  * @param path Путь.
@@ -92,10 +100,8 @@ void UserInterface::setPassive(int passive) {
  * Осуществление соединения, посредством использования интерпретатора протокола.
  */
 void UserInterface::connect() {
-    ProtocolInterpreter *pi; // Указатель на объект интерпретатора протокола
     char tmp[1024];
     string command;
-    pi = new ProtocolInterpreter(this);
     
     pi->setAddress(address);
     pi->setUser(user);
@@ -109,7 +115,7 @@ void UserInterface::connect() {
     pi->setStructure(structure);
     pi->sendCommand("STRU");
     do {
-        cout << "Please, enter your command:" << endl;
+        service->printMessage(3, "Please, enter your command:");
         cin.getline(tmp, 1024);
         command = tmp;
         doCommand(command);
@@ -137,6 +143,7 @@ void UserInterface::connect() {
  */
 void UserInterface::doCommand(string command) {
     path = command.substr(4, command.substr(4).find(" "));
+    service->printMessage(1, path);
     return;
     if (command.substr(0, 3) == "get") {
         pi->setPassive(passive);
@@ -149,29 +156,13 @@ void UserInterface::doCommand(string command) {
         pi->setPath(path);
         pi->setLocalPath(localPath);
         pi->sendCommand("RETR");
-    } else if (command == "help") {
-        cout << "You can use following commands:" << endl;
-        cout << "get <path> - to get a file" << endl;
+    } else if (command.substr(0, 4) == "help") {
+        service->printMessage(1, "You can use following commands:");
+        service->printMessage(1, "get <path> - to get a file");
     }
 }
 
-/**
- * Вывод сообщений на экран.
- * 
- * @param type Тип сообщений (0 - простой вывод, 1 - информационное сообщение, 2 - ошибка).
- * @param message Сообщение для вывода.
- */
-void UserInterface::printMessage(int type, string message) {
-    switch (type) {
-        case 0:
-            printf("%s", message.c_str());
-            break;
-        case 1:
-            printf("Info: %s\n", message.c_str());
-            break;
-        case 2:
-            printf("Error: %s\n", message.c_str());
-            break;
-        default: break;
-    }
+UserInterface::~UserInterface() {
+    delete pi;
+    delete service;
 }
