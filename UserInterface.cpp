@@ -133,30 +133,12 @@ void UserInterface::connect() {
     pi->setPassword(password);
     pi->openControlConnection();
     pi->sendCommand("USER");
-    pi->setType(type);
-    pi->sendCommand("TYPE");
-    pi->setMode(mode);
-    pi->sendCommand("MODE");
-    pi->setStructure(structure);
-    pi->sendCommand("STRU");
     do {
         service->printMessage(3, "Please, enter your command:");
         cin.getline(tmp, 1024);
         command = tmp;
         doCommand(command);
     } while (command != "quit");
-
-//    setPath("incoming/robots.txt");
-//    pi->setPath(path);
-//    pi->setPassive(passive);
-//    if (passive) {
-//        pi->sendCommand("PASV");
-//    } else {
-//        pi->sendCommand("PORT");
-//    }
-//    pi->sendCommand("STOR");
-//    pi->sendCommand("DELE");
-//    pi->sendCommand("NOOP");
     pi->sendCommand("QUIT");
     pi->closeControlConnection();
 }
@@ -167,9 +149,6 @@ void UserInterface::connect() {
  * @param command Команда.
  */
 void UserInterface::doCommand(string command) {
-    path = command.substr(4, command.substr(4).find(" "));
-    service->printMessage(1, path);
-    return;
     if (command.substr(0, 3) == "get") {
         pi->setPassive(passive);
         if (passive) {
@@ -178,12 +157,54 @@ void UserInterface::doCommand(string command) {
             pi->sendCommand("PORT");
         }
         path = command.substr(4, command.substr(4).find(" "));
+        localPath = command.substr(command.find("to ") + 3);
         pi->setPath(path);
         pi->setLocalPath(localPath);
         pi->sendCommand("RETR");
-    } else if (command.substr(0, 4) == "help") {
-        service->printMessage(1, "You can use following commands:");
-        service->printMessage(1, "get <path> - to get a file");
+    } else if (command.substr(0, 4) == "send") {
+        pi->setPassive(passive);
+        if (passive) {
+            pi->sendCommand("PASV");
+        } else {
+            pi->sendCommand("PORT");
+        }
+        path = command.substr(5, command.substr(5).find(" "));
+        pi->setPath(path);
+        pi->sendCommand("STOR");
+    } else if (command.substr(0, 6) == "delete") {
+        path = command.substr(7, command.substr(7).find(" "));
+        pi->setPath(path);
+        pi->sendCommand("DELE");
+    } else if (command == "abort") {
+        pi->sendCommand("ABOR");
+    } else if (command.substr(0, 4) == "type") {
+        type = command.substr(5, command.substr(5).find(" "));
+        pi->setType(type);
+        pi->sendCommand("TYPE");
+    } else if (command.substr(0, 4) == "mode") {
+        mode = command.substr(5, command.substr(5).find(" "));
+        pi->setMode(mode);
+        pi->sendCommand("MODE");
+    } else if (command.substr(0, 6) == "struct") {
+        structure = command.substr(7, command.substr(7).find(" "));
+        pi->setStructure(structure);
+        pi->sendCommand("STRU");
+    } else if (command == "noop") {
+        pi->sendCommand("NOOP");
+    } else if (command == "help") {
+        service->printMessage(0, "\tYou can use following commands:\n");
+        service->printMessage(0, "\tget <path> to <path> - to get a file from server;\n");
+        service->printMessage(0, "\tsend <path> - to send a file to server;\n");
+        service->printMessage(0, "\tdelete <path> - to delete file from server;\n");
+        service->printMessage(0, "\tabort - to abort current operation;\n");
+        service->printMessage(0, "\ttype <type> - switch to type;\n");
+        service->printMessage(0, "\tmode <mode> - switch to mode;\n");
+        service->printMessage(0, "\tstruct <structure> - switch to structure;\n");
+        service->printMessage(0, "\tnoop - no operation;\n");
+        service->printMessage(0, "\tquit - close the client.\n");
+    } else if (command == "quit") {
+    } else {
+        service->printMessage(2, "Unknown command!");
     }
 }
 
