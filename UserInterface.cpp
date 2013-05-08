@@ -13,6 +13,31 @@
 UserInterface::UserInterface() {
     service = new Service();
     pi = new ProtocolInterpreter();
+    char currentDirectory[MAX_PATH];
+    char charParameter[256];
+    int intParameter;
+    
+    iniPath = "";
+    GetCurrentDirectory(MAX_PATH, currentDirectory);
+    iniPath.append(currentDirectory).append("\\config.ini");
+    GetPrivateProfileString("connection", "address", "127.0.0.1", charParameter, 100, iniPath.c_str());
+    setAddress(charParameter);
+    GetPrivateProfileString("connection", "user", "anonymous", charParameter, 100, iniPath.c_str());
+    setUser(charParameter);
+    GetPrivateProfileString("connection", "password", "", charParameter, 100, iniPath.c_str());
+    setPassword(charParameter);
+    GetPrivateProfileString("modes", "type", "A N", charParameter, 100, iniPath.c_str());
+    setType(charParameter);
+    GetPrivateProfileString("modes", "mode", "S", charParameter, 100, iniPath.c_str());
+    setMode(charParameter);
+    GetPrivateProfileString("modes", "structure", "F", charParameter, 100, iniPath.c_str());
+    setStructure(charParameter);
+    intParameter = GetPrivateProfileInt("modes", "passive", 1, iniPath.c_str());
+    setPassive(intParameter);
+    GetPrivateProfileString("paths", "path", "", charParameter, 100, iniPath.c_str());
+    setPath(charParameter);
+    GetPrivateProfileString("paths", "localPath", "", charParameter, 100, iniPath.c_str());
+    setLocalPath(charParameter);
 }
 
 /**

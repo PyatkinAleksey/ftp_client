@@ -40,6 +40,7 @@ class UserInterface {
     private:
         Service *service;           // Объект сервисного класса
         ProtocolInterpreter *pi;    // Объект интерпретатора протокола
+        string iniPath;             // Путь к конфигурационному файлу
         string localPath;           // Локальный адрес для сохранения файлов
         string address;             // Адрес сервера
         string user;                // Имя пользователя
