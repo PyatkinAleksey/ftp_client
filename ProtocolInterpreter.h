@@ -74,6 +74,7 @@ class ProtocolInterpreter {
         void sendStor();                                // Отправка команды STOR
         void sendDele();                                // Отправка команды DELE
         void sendCwd();                                 // Отправка команды CWD
+        void sendCdup();                                // Отправка команды CDUP
         void sendPwd();                                 // Отправка команды PWD
         void sendAbor();                                // Отправка команды ABOR
         void sendQuit();                                // Отправка команды QUIT

@@ -180,6 +180,8 @@ void UserInterface::doCommand(string command) {
         path = command.substr(6, command.substr(6).find(" "));
         pi->setPath(path);
         pi->sendCommand("CWD");
+    } else if (command == "up") {
+        pi->sendCommand("CDUP");
     } else if (command == "where") {
         pi->sendCommand("PWD");
     } else if (command == "abort") {
@@ -210,7 +212,7 @@ void UserInterface::doCommand(string command) {
         service->printMessage(0, "\tmode <mode> - switch to mode;\n");
         service->printMessage(0, "\tstruct <structure> - switch to structure;\n");
         service->printMessage(0, "\tnoop - no operation;\n");
-        service->printMessage(0, "\tquit - close the client.\n");
+        service->printMessage(0, "\tquit - to logout.\n");
     } else if (command == "quit") {
     } else {
         service->printMessage(2, "Unknown command!");
