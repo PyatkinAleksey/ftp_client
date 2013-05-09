@@ -6,7 +6,6 @@
  */
 
 #include <winsock2.h>
-
 #include "UserDTP.h"
 
 /**

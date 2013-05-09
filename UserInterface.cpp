@@ -175,6 +175,10 @@ void UserInterface::doCommand(string command) {
         path = command.substr(7, command.substr(7).find(" "));
         pi->setPath(path);
         pi->sendCommand("DELE");
+    } else if (command.substr(0, 3) == "cwd") {
+        path = command.substr(4, command.substr(4).find(" "));
+        pi->setPath(path);
+        pi->sendCommand("CWD");
     } else if (command == "abort") {
         pi->sendCommand("ABOR");
     } else if (command.substr(0, 4) == "type") {
