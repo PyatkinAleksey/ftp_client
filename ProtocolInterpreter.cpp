@@ -288,6 +288,8 @@ void ProtocolInterpreter::sendCommand(string command) {
         sendDele();
     } else if (command == "CWD") {
         sendCwd();
+    } else if (command == "PWD") {
+        sendPwd();
     } else if (command == "ABOR") {
         sendAbor();
     } else if (command == "QUIT") {
@@ -572,6 +574,22 @@ void ProtocolInterpreter::sendCwd() {
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
     if (result == SOCKET_ERROR) {
         service->printMessage(2, "CWD sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return;
+    }
+    printReply();
+}
+
+/**
+ * Отправка команды PWD.
+ */
+void ProtocolInterpreter::sendPwd() {
+    service->printMessage(0, "PWD\n");
+    commandBuffer = "PWD\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        service->printMessage(2, "PWD sending error!");
         closesocket(connectionSocket);
         WSACleanup();
         return;

@@ -133,6 +133,7 @@ void UserInterface::connect() {
     pi->setPassword(password);
     pi->openControlConnection();
     pi->sendCommand("USER");
+    service->printMessage(1, "Use 'help' command for help.");
     do {
         service->printMessage(3, "Please, enter your command:");
         cin.getline(tmp, 1024);
@@ -175,10 +176,12 @@ void UserInterface::doCommand(string command) {
         path = command.substr(7, command.substr(7).find(" "));
         pi->setPath(path);
         pi->sendCommand("DELE");
-    } else if (command.substr(0, 3) == "cwd") {
-        path = command.substr(4, command.substr(4).find(" "));
+    } else if (command.substr(0, 5) == "go to") {
+        path = command.substr(6, command.substr(6).find(" "));
         pi->setPath(path);
         pi->sendCommand("CWD");
+    } else if (command == "where") {
+        pi->sendCommand("PWD");
     } else if (command == "abort") {
         pi->sendCommand("ABOR");
     } else if (command.substr(0, 4) == "type") {
@@ -200,6 +203,8 @@ void UserInterface::doCommand(string command) {
         service->printMessage(0, "\tget <path> to <path> - to get a file from server;\n");
         service->printMessage(0, "\tsend <path> - to send a file to server;\n");
         service->printMessage(0, "\tdelete <path> - to delete file from server;\n");
+        service->printMessage(0, "\tgo to <path> - go to any directory;\n");
+        service->printMessage(0, "\twhere - print current directory;\n");
         service->printMessage(0, "\tabort - to abort current operation;\n");
         service->printMessage(0, "\ttype <type> - switch to type;\n");
         service->printMessage(0, "\tmode <mode> - switch to mode;\n");
