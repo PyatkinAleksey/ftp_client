@@ -264,49 +264,60 @@ void ProtocolInterpreter::printReply() {
  * Отправка команды FTP-серверу.
  * 
  * @param command FTP-команда.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendCommand(string command) {
+int ProtocolInterpreter::sendCommand(string command) {
+    int success;
+    
     if (command == "USER") {
-        sendUser();
+        success = sendUser();
     } else if (command == "PASS") {
-        sendPass();
+        success = sendPass();
     } else if (command == "TYPE") {
-        sendType();
+        success = sendType();
     } else if (command == "MODE") {
-        sendMode();
+        success = sendMode();
     } else if (command == "STRU") {
-        sendStru();
+        success = sendStru();
     } else if (command == "PORT") {
-        sendPort();
+        success = sendPort();
     } else if (command == "PASV") {
-        sendPasv();
+        success = sendPasv();
     } else if (command == "RETR") {
-        sendRetr();
+        success = sendRetr();
     } else if (command == "STOR") {
-        sendStor();
+        success = sendStor();
     } else if (command == "DELE") {
-        sendDele();
+        success = sendDele();
     } else if (command == "CWD") {
-        sendCwd();
+        success = sendCwd();
     } else if (command == "CDUP") {
-        sendCdup();
+        success = sendCdup();
     } else if (command == "PWD") {
-        sendPwd();
+        success = sendPwd();
     } else if (command == "ABOR") {
-        sendAbor();
+        success = sendAbor();
+    } else if (command == "REIN") {
+        success = sendRein();
     } else if (command == "QUIT") {
-        sendQuit();
+        success = sendQuit();
     } else if (command == "NOOP") {
-        sendNoop();
+        success = sendNoop();
     } else {
         service->printMessage(1, "Unknown command!");
     }
+    
+    return success;
 }
 
 /**
  * Отправка команды USER.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, 1 - требуется дополнительная
+ * информация в качестве пароля, другое - успешно).
  */
-void ProtocolInterpreter::sendUser() {
+int ProtocolInterpreter::sendUser() {
     service->printMessage(0, "USER " + user + "\n");
     commandBuffer = "USER " + user + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
@@ -314,23 +325,24 @@ void ProtocolInterpreter::sendUser() {
         service->printMessage(2, "USER sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
-    if (strstr(replyBuffer, "331 ")) { // Требуется ввод дополнительной информации (например, E-Mail-адрес)
-        service->printMessage(0, "PASS ***\n");
-        sendCommand("PASS");
+    if (strstr(replyBuffer, "331 ")) { // Требуется ввод дополнительной информации в качестве пароля (например, E-Mail-адрес)
+        return 1;
+    } else if (strstr(replyBuffer, "230 ")) {
+        return 2;
+    } else {
+        return 0;
     }
 }
 
 /**
  * Отправка команды PASS.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendPass() {
-    if (password == "") {
-        service->printMessage(1, "Enter your password:");
-        cin >> password;
-    }
+int ProtocolInterpreter::sendPass() {
     service->printMessage(0, "PASS " + password + "\n");
     commandBuffer = "PASS " + password + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
@@ -338,18 +350,22 @@ void ProtocolInterpreter::sendPass() {
         service->printMessage(2, "Additional information sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
     if (strstr(replyBuffer, "530 ")) { // Превышено максимальное кол-во возможных соединений
         exit(1);
+    } else {
+        return 1;
     }
 }
 
 /**
  * Отправка команды TYPE.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendType() {
+int ProtocolInterpreter::sendType() {
     service->printMessage(0, "TYPE " + type + "\n");
     commandBuffer = "TYPE " + type + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
@@ -357,15 +373,22 @@ void ProtocolInterpreter::sendType() {
         service->printMessage(2, "TYPE sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
+    if (strstr(replyBuffer, "200 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
  * Отправка команды MODE.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendMode() {
+int ProtocolInterpreter::sendMode() {
     service->printMessage(0, "MODE " + mode + "\n");
     commandBuffer = "MODE " + mode + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
@@ -373,15 +396,22 @@ void ProtocolInterpreter::sendMode() {
         service->printMessage(2, "MODE sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
+    if (strstr(replyBuffer, "200 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
  * Отправка команды STRU.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendStru() {
+int ProtocolInterpreter::sendStru() {
     service->printMessage(0, "STRU " + structure + "\n");
     commandBuffer = "STRU " + structure + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
@@ -389,15 +419,22 @@ void ProtocolInterpreter::sendStru() {
         service->printMessage(2, "STRU sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
+    if (strstr(replyBuffer, "200 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
  * Отправка команды PORT.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendPort() {
+int ProtocolInterpreter::sendPort() {
     setPortData();
     service->printMessage(0, "PORT " + portData + "\n");
     commandBuffer = "PORT " + portData + "\r\n";
@@ -406,15 +443,22 @@ void ProtocolInterpreter::sendPort() {
         service->printMessage(2, "PORT sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
+    if (strstr(replyBuffer, "200 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
  * Отправка команды PASV.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendPasv() {
+int ProtocolInterpreter::sendPasv() {
     service->printMessage(0, "PASV\n");
     commandBuffer = "PASV\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
@@ -422,15 +466,22 @@ void ProtocolInterpreter::sendPasv() {
         service->printMessage(2, "PASV sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
+    if (strstr(replyBuffer, "227 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
  * Отправка команды RETR.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendRetr() {
+int ProtocolInterpreter::sendRetr() {
     udtp->setAddress(address);
     udtp->setPath(path);
     udtp->setLocalPath(localPath);
@@ -442,7 +493,7 @@ void ProtocolInterpreter::sendRetr() {
             udtp->openConnection();
         } else {
             service->printMessage(2, "You should run PASV command first.");
-            return;
+            return 0;
         }
     } else {
         udtp->setPort(port);
@@ -455,7 +506,7 @@ void ProtocolInterpreter::sendRetr() {
         service->printMessage(2, "RETR sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
     if (strstr(replyBuffer, "425 ")) {
@@ -489,12 +540,19 @@ void ProtocolInterpreter::sendRetr() {
     if (passive) {
         udtp->closeConnection();
     }
+    if (strstr(replyBuffer, "226 ") || strstr(replyBuffer, "250 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
  * Отправка команды STOR.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendStor() {
+int ProtocolInterpreter::sendStor() {
     udtp->setAddress(address);
     udtp->setPath(path);
     udtp->setPassive(passive);
@@ -505,7 +563,7 @@ void ProtocolInterpreter::sendStor() {
             udtp->openConnection();
         } else {
             service->printMessage(2, "You should run PASV command first.");
-            return;
+            return 0;
         }
     } else {
         udtp->setPort(port);
@@ -518,11 +576,11 @@ void ProtocolInterpreter::sendStor() {
         service->printMessage(2, "STOR sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
     if (strstr(replyBuffer, "550 ") || strstr(replyBuffer, "553 ")) { // Отсутствуют права
-        return;
+        return 0;
     } else if (strstr(replyBuffer, "425 ")) {
         if (passive) {
             udtp->closeConnection();
@@ -549,12 +607,19 @@ void ProtocolInterpreter::sendStor() {
         udtp->store();
         printReply();
     }
+    if (strstr(replyBuffer, "226 ") || strstr(replyBuffer, "250 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
  * Отправка команды DELE.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendDele() {
+int ProtocolInterpreter::sendDele() {
     service->printMessage(0, "DELE " + path + "\n");
     commandBuffer = "DELE " + path + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
@@ -562,15 +627,22 @@ void ProtocolInterpreter::sendDele() {
         service->printMessage(2, "DELE sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
+    if (strstr(replyBuffer, "250 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
  * Отправка команды CWD.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendCwd() {
+int ProtocolInterpreter::sendCwd() {
     service->printMessage(0, "CWD " + path + "\n");
     commandBuffer = "CWD " + path + "\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
@@ -578,15 +650,22 @@ void ProtocolInterpreter::sendCwd() {
         service->printMessage(2, "CWD sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
+    if (strstr(replyBuffer, "250 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
  * Отправка команды CDUP.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendCdup() {
+int ProtocolInterpreter::sendCdup() {
     service->printMessage(0, "CDUP\n");
     commandBuffer = "CDUP\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
@@ -594,15 +673,22 @@ void ProtocolInterpreter::sendCdup() {
         service->printMessage(2, "CDUP sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
+    if (strstr(replyBuffer, "200 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
  * Отправка команды PWD.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendPwd() {
+int ProtocolInterpreter::sendPwd() {
     service->printMessage(0, "PWD\n");
     commandBuffer = "PWD\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
@@ -610,15 +696,22 @@ void ProtocolInterpreter::sendPwd() {
         service->printMessage(2, "PWD sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
+    if (strstr(replyBuffer, "257 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
  * Отправка команды ABOR.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendAbor() {
+int ProtocolInterpreter::sendAbor() {
     service->printMessage(0, "ABOR\n");
     commandBuffer = "ABOR\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
@@ -626,18 +719,48 @@ void ProtocolInterpreter::sendAbor() {
         service->printMessage(2, "ABOR sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
     if (strstr(replyBuffer, "426 ")) { // Ненормальное завершение команды (вернется еще один отклик)
         printReply();
     }
+    if (strstr(replyBuffer, "225 ") || strstr(replyBuffer, "226 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+/**
+ * Отправка команды REIN.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
+ */
+int ProtocolInterpreter::sendRein() {
+    service->printMessage(0, "REIN\n");
+    commandBuffer = "REIN\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        service->printMessage(2, "REIN sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return 0;
+    }
+    printReply();
+    if (strstr(replyBuffer, "220 ") || strstr(replyBuffer, "120 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
  * Отправка команды QUIT.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendQuit() {
+int ProtocolInterpreter::sendQuit() {
     service->printMessage(0, "QUIT\n");
     commandBuffer = "QUIT\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
@@ -645,15 +768,22 @@ void ProtocolInterpreter::sendQuit() {
         service->printMessage(2, "QUIT sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
+    if (strstr(replyBuffer, "221 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
  * Отправка команды NOOP.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
  */
-void ProtocolInterpreter::sendNoop() {
+int ProtocolInterpreter::sendNoop() {
     service->printMessage(0, "NOOP\n");
     commandBuffer = "NOOP\r\n";
     result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
@@ -661,9 +791,14 @@ void ProtocolInterpreter::sendNoop() {
         service->printMessage(2, "NOOP sending error!");
         closesocket(connectionSocket);
         WSACleanup();
-        return;
+        return 0;
     }
     printReply();
+    if (strstr(replyBuffer, "200 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 ProtocolInterpreter::~ProtocolInterpreter() {

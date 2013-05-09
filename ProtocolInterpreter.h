@@ -39,7 +39,7 @@ class ProtocolInterpreter {
         void setPortData();                     // Установка данных для команды PORT
         void setPort();                         // Установка номера динамического порта из 227 отклика команды PASV
         void setPassive(int passive);           // Установка флага использования пассивного режима
-        void sendCommand(string command);       // Отправка команды
+        int sendCommand(string command);        // Отправка команды
         
     private:
         static const int MAX_BUF_LEN = 4096;    // Максимальный размер буфера
@@ -63,21 +63,22 @@ class ProtocolInterpreter {
         int result;                             // Код результата
         
         void printReply();                              // Вывод отклика от сервера
-        void sendUser();                                // Отправка команды USER
-        void sendPass();                                // Отправка команды PASS
-        void sendType();                                // Отправка команды TYPE
-        void sendMode();                                // Отправка команды MODE
-        void sendStru();                                // Отправка команды STRU
-        void sendPort();                                // Отправка команды PORT
-        void sendPasv();                                // Отправка команды PASV
-        void sendRetr();                                // Отправка команды RETR
-        void sendStor();                                // Отправка команды STOR
-        void sendDele();                                // Отправка команды DELE
-        void sendCwd();                                 // Отправка команды CWD
-        void sendCdup();                                // Отправка команды CDUP
-        void sendPwd();                                 // Отправка команды PWD
-        void sendAbor();                                // Отправка команды ABOR
-        void sendQuit();                                // Отправка команды QUIT
-        void sendNoop();                                // Отправка команды NOOP
+        int sendUser();                                // Отправка команды USER
+        int sendPass();                                // Отправка команды PASS
+        int sendType();                                // Отправка команды TYPE
+        int sendMode();                                // Отправка команды MODE
+        int sendStru();                                // Отправка команды STRU
+        int sendPort();                                // Отправка команды PORT
+        int sendPasv();                                // Отправка команды PASV
+        int sendRetr();                                // Отправка команды RETR
+        int sendStor();                                // Отправка команды STOR
+        int sendDele();                                // Отправка команды DELE
+        int sendCwd();                                 // Отправка команды CWD
+        int sendCdup();                                // Отправка команды CDUP
+        int sendPwd();                                 // Отправка команды PWD
+        int sendAbor();                                // Отправка команды ABOR
+        int sendRein();                                 // Отправка команды REIN
+        int sendQuit();                                // Отправка команды QUIT
+        int sendNoop();                                // Отправка команды NOOP
         friend DWORD WINAPI startDTP(LPVOID parameter); // Поточная функция передачи файлов
 };

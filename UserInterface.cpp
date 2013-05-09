@@ -128,11 +128,8 @@ void UserInterface::connect() {
     char tmp[1024];
     string command;
     
-    pi->setAddress(address);
-    pi->setUser(user);
-    pi->setPassword(password);
-    pi->openControlConnection();
-    pi->sendCommand("USER");
+    doCommand("connect");
+    doCommand("login");
     service->printMessage(1, "Use 'help' command for help.");
     do {
         service->printMessage(3, "Please, enter your command:");
@@ -150,7 +147,30 @@ void UserInterface::connect() {
  * @param command Команда.
  */
 void UserInterface::doCommand(string command) {
-    if (command.substr(0, 3) == "get") {
+    if (command == "connect") {
+        pi->setAddress(address);
+        pi->openControlConnection();
+    } else if (command == "login") {
+        pi->setUser(user);
+        if (pi->sendCommand("USER") == 1) {
+            if (password == "") {
+                service->printMessage(3, "Enter your password:");
+                cin >> password;
+            }
+            pi->setPassword(password);
+            pi->sendCommand("PASS");
+        }
+    } else if (command == "relogin") {
+        service->printMessage(3, "Enter your username:");
+        cin >> user;
+        pi->setUser(user);
+        if (pi->sendCommand("USER") == 1) {
+            service->printMessage(3, "Enter your password:");
+            cin >> password;
+            pi->setPassword(password);
+            pi->sendCommand("PASS");
+        }
+    } else if (command.substr(0, 3) == "get") {
         pi->setPassive(passive);
         if (passive) {
             pi->sendCommand("PASV");
@@ -198,19 +218,28 @@ void UserInterface::doCommand(string command) {
         structure = command.substr(7, command.substr(7).find(" "));
         pi->setStructure(structure);
         pi->sendCommand("STRU");
+    } else if (command == "reinit") {
+        if (pi->sendCommand("REIN")) {
+            doCommand("relogin");
+        }
     } else if (command == "noop") {
         pi->sendCommand("NOOP");
     } else if (command == "help") {
         service->printMessage(0, "\tYou can use following commands:\n");
+        service->printMessage(0, "\tconnect - connect to server;\n");
+        service->printMessage(0, "\tlogin - to authorize on server with the standard parameters;\n");
+        service->printMessage(0, "\trelogin - to authorize on server with another parameters;\n");
         service->printMessage(0, "\tget <path> to <path> - to get a file from server;\n");
         service->printMessage(0, "\tsend <path> - to send a file to server;\n");
         service->printMessage(0, "\tdelete <path> - to delete file from server;\n");
         service->printMessage(0, "\tgo to <path> - go to any directory;\n");
+        service->printMessage(0, "\tup - go to up-level directory;\n");
         service->printMessage(0, "\twhere - print current directory;\n");
         service->printMessage(0, "\tabort - to abort current operation;\n");
         service->printMessage(0, "\ttype <type> - switch to type;\n");
         service->printMessage(0, "\tmode <mode> - switch to mode;\n");
         service->printMessage(0, "\tstruct <structure> - switch to structure;\n");
+        service->printMessage(0, "\treinit - to reinitialize;\n");
         service->printMessage(0, "\tnoop - no operation;\n");
         service->printMessage(0, "\tquit - to logout.\n");
     } else if (command == "quit") {
