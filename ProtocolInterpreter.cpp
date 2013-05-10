@@ -306,6 +306,8 @@ int ProtocolInterpreter::sendCommand(string command) {
         success = sendRein();
     } else if (command == "QUIT") {
         success = sendQuit();
+    } else if (command == "SYST") {
+        success = sendSyst();
     } else if (command == "NOOP") {
         success = sendNoop();
     } else {
@@ -872,6 +874,24 @@ int ProtocolInterpreter::sendQuit() {
     } else {
         return 0;
     }
+}
+
+/**
+ * Отправка команды SYST.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
+ */
+int ProtocolInterpreter::sendSyst() {
+    service->printMessage(0, "SYST\n");
+    commandBuffer = "SYST\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        service->printMessage(2, "SYST sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return 0;
+    }
+    printReply();
 }
 
 /**

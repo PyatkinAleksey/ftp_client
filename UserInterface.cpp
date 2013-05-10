@@ -264,6 +264,8 @@ void UserInterface::doCommand(string command) {
         if (pi->sendCommand("REIN")) {
             doCommand("relogin");
         }
+    } else if (command == "system") {
+        pi->sendCommand("SYST");
     } else if (command == "noop") {
         pi->sendCommand("NOOP");
     } else if (command == "help") {
@@ -284,6 +286,7 @@ void UserInterface::doCommand(string command) {
         service->printMessage(0, "\tmode <mode> - switch to mode;\n");
         service->printMessage(0, "\tstruct <structure> - switch to structure;\n");
         service->printMessage(0, "\treinit - to reinitialize;\n");
+        service->printMessage(0, "\tsystem - get a system type;\n");
         service->printMessage(0, "\tnoop - no operation;\n");
         service->printMessage(0, "\tquit - to logout.\n");
     } else if (command == "quit") {
