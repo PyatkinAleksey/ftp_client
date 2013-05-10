@@ -301,6 +301,8 @@ int ProtocolInterpreter::sendCommand(string command) {
         success = sendStor();
     } else if (command == "DELE") {
         success = sendDele();
+    } else if (command == "MKD") {
+        success = sendMkd();
     } else if (command == "CWD") {
         success = sendCwd();
     } else if (command == "CDUP") {
@@ -745,6 +747,29 @@ int ProtocolInterpreter::sendDele() {
 }
 
 /**
+ * Отправка команды MKD.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
+ */
+int ProtocolInterpreter::sendMkd() {
+    service->printMessage(0, "MKD " + path + "\n");
+    commandBuffer = "MKD " + path + "\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        service->printMessage(2, "MKD sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return 0;
+    }
+    printReply();
+    if (strstr(replyBuffer, "257 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+/**
  * Отправка команды CWD.
  * 
  * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
@@ -901,7 +926,11 @@ int ProtocolInterpreter::sendSyst() {
         return 0;
     }
     printReply();
-    return 1;
+    if (strstr(replyBuffer, "215 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
@@ -925,7 +954,11 @@ int ProtocolInterpreter::sendStat() {
         return 0;
     }
     printReply();
-    return 1;
+    if (strstr(replyBuffer, "211 ") || strstr(replyBuffer, "212 ") || strstr(replyBuffer, "213 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**

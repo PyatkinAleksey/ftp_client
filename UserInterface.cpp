@@ -232,6 +232,10 @@ void UserInterface::doCommand(string command) {
         path = command.substr(7, command.substr(7).find(" "));
         pi->setPath(path);
         pi->sendCommand("DELE");
+    } else if (command.substr(0, 5) == "mkdir") {
+        path = command.substr(6);
+        pi->setPath(path);
+        pi->sendCommand("MKD");
     } else if (command.substr(0, 5) == "go to") {
         path = command.substr(6, command.substr(6).find(" "));
         pi->setPath(path);
@@ -280,6 +284,7 @@ void UserInterface::doCommand(string command) {
         service->printMessage(0, "\tget <path> to <path> - to get a file from server;\n");
         service->printMessage(0, "\tsend <path> - to send a file to server;\n");
         service->printMessage(0, "\tdelete <path> - to delete file from server;\n");
+        service->printMessage(0, "\tmkdir - to make a directory;\n");
         service->printMessage(0, "\tgo to <path> - go to any directory;\n");
         service->printMessage(0, "\tup - go to up-level directory;\n");
         service->printMessage(0, "\twhere - print current directory;\n");

@@ -173,7 +173,7 @@ void UserDTP::fullList() {
         memset(buffer, 0, 4096);
         result = recv(dataSocket, buffer, 4096, 0);
         if (result > 0) {
-            cout << buffer;
+            service->printMessage(0, buffer);
         }
     } while (result > 0);
 }
