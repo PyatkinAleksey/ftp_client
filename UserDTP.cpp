@@ -147,9 +147,28 @@ void UserDTP::closeConnection() {
 }
 
 /**
+ * Получить список имен файлов и директорий.
+ * 
+ * @return Массив имен файлов и директорий.
+ */
+list<string> UserDTP::fileList() {
+    list<string> filelist;
+    
+    do {
+        memset(buffer, 0, 4096);
+        result = recv(dataSocket, buffer, 4096, 0);
+        if (result > 0) {
+            filelist.push_back(buffer);
+        }
+    } while (result > 0);
+    
+    return filelist;
+}
+
+/**
  * Получение списка файлов и директорий.
  */
-void UserDTP::list() {
+void UserDTP::fullList() {
     do {
         memset(buffer, 0, 4096);
         result = recv(dataSocket, buffer, 4096, 0);

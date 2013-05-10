@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include <string.h>
-#include <stdio.h>
+#include <list>
 #include "Service.h"
 #include "ProtocolInterpreter.h"
 

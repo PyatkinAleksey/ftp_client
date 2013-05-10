@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <string.h>
+#include <list>
 #include <windows.h>
 #include <winsock2.h>
 #include <stdlib.h>
@@ -24,6 +25,8 @@ using namespace std;
  */
 class ProtocolInterpreter {
     public:
+        list<string> fileList;                  // Список имен файлов и директорий, полученный командой NLST
+        
         ProtocolInterpreter();                  // Инициализация интерпретатора протокола
         ~ProtocolInterpreter();                 // Освобождение ресурсов
         void openControlConnection();           // Открытие управляющего соединения
@@ -70,6 +73,7 @@ class ProtocolInterpreter {
         int sendStru();                                 // Отправка команды STRU
         int sendPort();                                 // Отправка команды PORT
         int sendPasv();                                 // Отправка команды PASV
+        int sendNlst();                                 // Отправка команды NLST
         int sendList();                                 // Отправка команды LIST
         int sendRetr();                                 // Отправка команды RETR
         int sendStor();                                 // Отправка команды STOR

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <fstream>
+#include <list>
 #include "Service.h"
 
 using namespace std;
@@ -22,7 +23,8 @@ class UserDTP {
         ~UserDTP();                         // Освобождение ресурсов
         void openConnection();              // Открытие соединения данных
         void closeConnection();             // Закрытие соединения по данным
-        void list();                        // Получение списка файлов и директорий
+        list<string> fileList();            // Получить список имен файлов и директорий
+        void fullList();                    // Получение списка файлов и директорий
         void retrieve();                    // Выполнение передачи файлов от сервера
         void store();                       // Выполнение передачи файлов на сервер
         void setLocalPath(string path);     // Установка локального пути для сохранения файлов, получаемых от сервера

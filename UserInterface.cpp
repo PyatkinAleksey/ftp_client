@@ -183,8 +183,33 @@ void UserInterface::doCommand(string command) {
             path = "#";
         }
         pi->setPath(path);
-        pi->sendCommand("LIST");
+        if (pi->sendCommand("NLST")) {
+            service->printMessage(0, "This directory contains:\n");
+            for (list<string>::iterator iterator = pi->fileList.begin();
+                    iterator != pi->fileList.end(); ++iterator) {
+                service->printMessage(0, *iterator + "\n");
+            }
+        } else {
+            service->printMessage(0, "This directory is empty!\n");
+        }
         if (command.length() == 4) {
+            pi->setPath(path);
+        }
+    } else if (command.substr(0, 9) == "full list") {
+        pi->setPassive(passive);
+        if (passive) {
+            pi->sendCommand("PASV");
+        } else {
+            pi->sendCommand("PORT");
+        }
+        if (command.length() > 9) { // Есть аргумент
+            path = command.substr(10, command.substr(10).find(" "));
+        } else {
+            path = "#";
+        }
+        pi->setPath(path);
+        pi->sendCommand("LIST");
+        if (command.length() == 9) {
             pi->setPath(path);
         }
     } else if (command.substr(0, 3) == "get") {
@@ -246,7 +271,8 @@ void UserInterface::doCommand(string command) {
         service->printMessage(0, "\tconnect - connect to server;\n");
         service->printMessage(0, "\tlogin - to authorize on server with the standard parameters;\n");
         service->printMessage(0, "\trelogin - to authorize on server with another parameters;\n");
-        service->printMessage(0, "\tlist - list of files and directories;\n");
+        service->printMessage(0, "\tlist - get a list of files and directories;\n");
+        service->printMessage(0, "\tfull list - full list of files and directories with additional information;\n");
         service->printMessage(0, "\tget <path> to <path> - to get a file from server;\n");
         service->printMessage(0, "\tsend <path> - to send a file to server;\n");
         service->printMessage(0, "\tdelete <path> - to delete file from server;\n");

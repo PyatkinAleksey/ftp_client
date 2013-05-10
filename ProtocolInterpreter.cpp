@@ -284,6 +284,8 @@ int ProtocolInterpreter::sendCommand(string command) {
         success = sendPort();
     } else if (command == "PASV") {
         success = sendPasv();
+    } else if (command == "NLST") {
+        success = sendNlst();
     } else if (command == "LIST") {
         success = sendList();
     } else if (command == "RETR") {
@@ -479,6 +481,52 @@ int ProtocolInterpreter::sendPasv() {
 }
 
 /**
+ * Отправка команды NLST.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
+ */
+int ProtocolInterpreter::sendNlst() {
+    if (path == "#") {
+        commandBuffer = "NLST\r\n";
+        service->printMessage(0, "NLST\n");
+    } else {
+        commandBuffer = "NLST " + path + "\r\n";
+        service->printMessage(0, "NLST " + path + "\n");
+    }
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        service->printMessage(2, "NLST sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return 0;
+    }
+    udtp->setPassive(passive);
+    udtp->setAddress(address);
+    if (passive) {
+        if (strstr(replyBuffer, "227 ")) {
+            setPort();
+            udtp->setPort(port);
+            udtp->openConnection();
+        } else {
+            service->printMessage(2, "You should run PASV command first.");
+            return 0;
+        }
+    } else {
+        udtp->setPort(port);
+        connection = CreateThread(NULL, 0, startDTP, this, 0, NULL);
+    }
+    udtp->setPath(path);
+    fileList = udtp->fileList();
+    printReply();
+    printReply();
+    if (strstr(replyBuffer, "226 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+/**
  * Отправка команды LIST.
  * 
  * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
@@ -514,7 +562,7 @@ int ProtocolInterpreter::sendList() {
         connection = CreateThread(NULL, 0, startDTP, this, 0, NULL);
     }
     udtp->setPath(path);
-    udtp->list();
+    udtp->fullList();
     printReply();
     printReply();
     if (strstr(replyBuffer, "226 ")) {
