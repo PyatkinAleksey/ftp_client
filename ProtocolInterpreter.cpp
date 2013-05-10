@@ -248,12 +248,19 @@ void ProtocolInterpreter::closeControlConnection() {
  * Вывод на экран отклика от FTP-сервера.
  */
 void ProtocolInterpreter::printReply() {
+    string code = "000 ";
+    
     memset(replyBuffer, 0, MAX_BUF_LEN);
     do {
         result = recv(connectionSocket, replyBuffer, MAX_BUF_LEN, 0);
         if (result > 0) {
+            if (code == "000 ") {
+                code[0] = replyBuffer[0];
+                code[1] = replyBuffer[1];
+                code[2] = replyBuffer[2];
+            }
             service->printMessage(0, replyBuffer);
-            if (replyBuffer[3] == ' ') {
+            if (strstr(replyBuffer, code.c_str())) {
                 break;
             }
         }
@@ -308,6 +315,8 @@ int ProtocolInterpreter::sendCommand(string command) {
         success = sendQuit();
     } else if (command == "SYST") {
         success = sendSyst();
+    } else if (command == "STAT") {
+        success = sendStat();
     } else if (command == "NOOP") {
         success = sendNoop();
     } else {
@@ -892,6 +901,31 @@ int ProtocolInterpreter::sendSyst() {
         return 0;
     }
     printReply();
+    return 1;
+}
+
+/**
+ * Отправка команды STAT.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
+ */
+int ProtocolInterpreter::sendStat() {
+    if (path == "#") {
+        service->printMessage(0, "STAT\n");
+        commandBuffer = "STAT\r\n";
+    } else {
+        service->printMessage(0, "STAT " + path + "\n");
+        commandBuffer = "STAT " + path + "\r\n";
+    }
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        service->printMessage(2, "STAT sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return 0;
+    }
+    printReply();
+    return 1;
 }
 
 /**

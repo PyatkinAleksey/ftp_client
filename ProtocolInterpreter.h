@@ -85,6 +85,7 @@ class ProtocolInterpreter {
         int sendRein();                                 // Отправка команды REIN
         int sendQuit();                                 // Отправка команды QUIT
         int sendSyst();                                 // Отправка команды SYST
+        int sendStat();                                 // Отправка команды STAT
         int sendNoop();                                 // Отправка команды NOOP
         friend DWORD WINAPI startDTP(LPVOID parameter); // Поточная функция передачи файлов
 };

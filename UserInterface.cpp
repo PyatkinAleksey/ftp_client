@@ -192,9 +192,6 @@ void UserInterface::doCommand(string command) {
         } else {
             service->printMessage(0, "This directory is empty!\n");
         }
-        if (command.length() == 4) {
-            pi->setPath(path);
-        }
     } else if (command.substr(0, 9) == "full list") {
         pi->setPassive(passive);
         if (passive) {
@@ -209,9 +206,6 @@ void UserInterface::doCommand(string command) {
         }
         pi->setPath(path);
         pi->sendCommand("LIST");
-        if (command.length() == 9) {
-            pi->setPath(path);
-        }
     } else if (command.substr(0, 3) == "get") {
         pi->setPassive(passive);
         if (passive) {
@@ -266,6 +260,14 @@ void UserInterface::doCommand(string command) {
         }
     } else if (command == "system") {
         pi->sendCommand("SYST");
+    } else if (command.substr(0, 6) == "status") {
+        if (command.length() > 6) {
+            path = command.substr(7);
+        } else {
+            path = "#";
+        }
+        pi->setPath(path);
+        pi->sendCommand("STAT");
     } else if (command == "noop") {
         pi->sendCommand("NOOP");
     } else if (command == "help") {
@@ -273,8 +275,8 @@ void UserInterface::doCommand(string command) {
         service->printMessage(0, "\tconnect - connect to server;\n");
         service->printMessage(0, "\tlogin - to authorize on server with the standard parameters;\n");
         service->printMessage(0, "\trelogin - to authorize on server with another parameters;\n");
-        service->printMessage(0, "\tlist - get a list of files and directories;\n");
-        service->printMessage(0, "\tfull list - full list of files and directories with additional information;\n");
+        service->printMessage(0, "\tlist [<path>] - get a list of files and directories;\n");
+        service->printMessage(0, "\tfull list [<path>] - full list of files and directories with additional information;\n");
         service->printMessage(0, "\tget <path> to <path> - to get a file from server;\n");
         service->printMessage(0, "\tsend <path> - to send a file to server;\n");
         service->printMessage(0, "\tdelete <path> - to delete file from server;\n");
@@ -287,6 +289,7 @@ void UserInterface::doCommand(string command) {
         service->printMessage(0, "\tstruct <structure> - switch to structure;\n");
         service->printMessage(0, "\treinit - to reinitialize;\n");
         service->printMessage(0, "\tsystem - get a system type;\n");
+        service->printMessage(0, "\tstatus [<path>] - get a server status;\n");
         service->printMessage(0, "\tnoop - no operation;\n");
         service->printMessage(0, "\tquit - to logout.\n");
     } else if (command == "quit") {
