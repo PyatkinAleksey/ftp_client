@@ -147,6 +147,19 @@ void UserDTP::closeConnection() {
 }
 
 /**
+ * Получение списка файлов и директорий.
+ */
+void UserDTP::list() {
+    do {
+        memset(buffer, 0, 4096);
+        result = recv(dataSocket, buffer, 4096, 0);
+        if (result > 0) {
+            cout << buffer;
+        }
+    } while (result > 0);
+}
+
+/**
  * Выполнение передачи файлов от сервера.
  */
 void UserDTP::retrieve() {

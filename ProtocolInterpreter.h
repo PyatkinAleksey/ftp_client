@@ -63,22 +63,23 @@ class ProtocolInterpreter {
         int result;                             // Код результата
         
         void printReply();                              // Вывод отклика от сервера
-        int sendUser();                                // Отправка команды USER
-        int sendPass();                                // Отправка команды PASS
-        int sendType();                                // Отправка команды TYPE
-        int sendMode();                                // Отправка команды MODE
-        int sendStru();                                // Отправка команды STRU
-        int sendPort();                                // Отправка команды PORT
-        int sendPasv();                                // Отправка команды PASV
-        int sendRetr();                                // Отправка команды RETR
-        int sendStor();                                // Отправка команды STOR
-        int sendDele();                                // Отправка команды DELE
-        int sendCwd();                                 // Отправка команды CWD
-        int sendCdup();                                // Отправка команды CDUP
-        int sendPwd();                                 // Отправка команды PWD
-        int sendAbor();                                // Отправка команды ABOR
+        int sendUser();                                 // Отправка команды USER
+        int sendPass();                                 // Отправка команды PASS
+        int sendType();                                 // Отправка команды TYPE
+        int sendMode();                                 // Отправка команды MODE
+        int sendStru();                                 // Отправка команды STRU
+        int sendPort();                                 // Отправка команды PORT
+        int sendPasv();                                 // Отправка команды PASV
+        int sendList();                                 // Отправка команды LIST
+        int sendRetr();                                 // Отправка команды RETR
+        int sendStor();                                 // Отправка команды STOR
+        int sendDele();                                 // Отправка команды DELE
+        int sendCwd();                                  // Отправка команды CWD
+        int sendCdup();                                 // Отправка команды CDUP
+        int sendPwd();                                  // Отправка команды PWD
+        int sendAbor();                                 // Отправка команды ABOR
         int sendRein();                                 // Отправка команды REIN
-        int sendQuit();                                // Отправка команды QUIT
-        int sendNoop();                                // Отправка команды NOOP
+        int sendQuit();                                 // Отправка команды QUIT
+        int sendNoop();                                 // Отправка команды NOOP
         friend DWORD WINAPI startDTP(LPVOID parameter); // Поточная функция передачи файлов
 };

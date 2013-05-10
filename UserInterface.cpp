@@ -170,6 +170,23 @@ void UserInterface::doCommand(string command) {
             pi->setPassword(password);
             pi->sendCommand("PASS");
         }
+    } else if (command.substr(0, 4) == "list") {
+        pi->setPassive(passive);
+        if (passive) {
+            pi->sendCommand("PASV");
+        } else {
+            pi->sendCommand("PORT");
+        }
+        if (command.length() > 4) { // Есть аргумент
+            path = command.substr(5, command.substr(5).find(" "));
+        } else {
+            path = "#";
+        }
+        pi->setPath(path);
+        pi->sendCommand("LIST");
+        if (command.length() == 4) {
+            pi->setPath(path);
+        }
     } else if (command.substr(0, 3) == "get") {
         pi->setPassive(passive);
         if (passive) {
@@ -229,6 +246,7 @@ void UserInterface::doCommand(string command) {
         service->printMessage(0, "\tconnect - connect to server;\n");
         service->printMessage(0, "\tlogin - to authorize on server with the standard parameters;\n");
         service->printMessage(0, "\trelogin - to authorize on server with another parameters;\n");
+        service->printMessage(0, "\tlist - list of files and directories;\n");
         service->printMessage(0, "\tget <path> to <path> - to get a file from server;\n");
         service->printMessage(0, "\tsend <path> - to send a file to server;\n");
         service->printMessage(0, "\tdelete <path> - to delete file from server;\n");
