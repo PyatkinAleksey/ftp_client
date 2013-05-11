@@ -39,6 +39,7 @@ class ProtocolInterpreter {
         void setMode(string mode);              // Установка значения режима передачи файлов
         void setStructure(string structure);    // Установка структуры файла
         void setPath(string path);              // Установка пути к файлу
+        void setNewPath(string newPath);        // Установка нового имени файла для команды переименования
         void setPortData();                     // Установка данных для команды PORT
         void setPort();                         // Установка номера динамического порта из 227 отклика команды PASV
         void setPassive(int passive);           // Установка флага использования пассивного режима
@@ -57,6 +58,7 @@ class ProtocolInterpreter {
         string mode;                            // Режим передачи файлов
         string structure;                       // Структура файла
         string path;                            // Путь к файлу
+        string newPath;                         // Новое имя файла для команды переименования
         string portData;                        // Данные для команды PORT
         int port;                               // Номер порта для соединения
         int passive;                            // Флаг использования пассивного режима
@@ -77,6 +79,8 @@ class ProtocolInterpreter {
         int sendList();                                 // Отправка команды LIST
         int sendRetr();                                 // Отправка команды RETR
         int sendStor();                                 // Отправка команды STOR
+        int sendRnto();                                 // Отправка команды RNTO
+        int sendRnfr();                                 // Отправка команды RNFR
         int sendDele();                                 // Отправка команды DELE
         int sendMkd();                                  // Отправка команды MKD
         int sendRmd();                                  // Отправка команды RMD

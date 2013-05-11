@@ -104,6 +104,15 @@ void ProtocolInterpreter::setPath(string path) {
 }
 
 /**
+ * Установка нового имени файла для команды переименования.
+ * 
+ * @param newPath Новое имя файла.
+ */
+void ProtocolInterpreter::setNewPath(string newPath) {
+    this->newPath = newPath;
+}
+
+/**
  * Установить данные для команды PORT.
  */
 void ProtocolInterpreter::setPortData() {
@@ -299,6 +308,10 @@ int ProtocolInterpreter::sendCommand(string command) {
         success = sendRetr();
     } else if (command == "STOR") {
         success = sendStor();
+    } else if (command == "RNTO") {
+        success = sendRnto();
+    } else if (command == "RNFR") {
+        success = sendRnfr();
     } else if (command == "DELE") {
         success = sendDele();
     } else if (command == "MKD") {
@@ -719,6 +732,52 @@ int ProtocolInterpreter::sendStor() {
         printReply();
     }
     if (strstr(replyBuffer, "226 ") || strstr(replyBuffer, "250 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+/**
+ * Отправка команды RNTO.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
+ */
+int ProtocolInterpreter::sendRnto() {
+    service->printMessage(0, "RNTO " + newPath + "\n");
+    commandBuffer = "RNTO " + newPath + "\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        service->printMessage(2, "RNTO sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return 0;
+    }
+    printReply();
+    if (strstr(replyBuffer, "250 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+/**
+ * Отправка команды RNFR.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
+ */
+int ProtocolInterpreter::sendRnfr() {
+    service->printMessage(0, "RNFR " + path + "\n");
+    commandBuffer = "RNFR " + path + "\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        service->printMessage(2, "RNFR sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return 0;
+    }
+    printReply();
+    if (strstr(replyBuffer, "350 ")) {
         return 1;
     } else {
         return 0;

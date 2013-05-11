@@ -21,104 +21,23 @@ UserInterface::UserInterface() {
     GetCurrentDirectory(MAX_PATH, currentDirectory);
     iniPath.append(currentDirectory).append("\\config.ini");
     GetPrivateProfileString("connection", "address", "127.0.0.1", charParameter, 100, iniPath.c_str());
-    setAddress(charParameter);
+    address = charParameter;
     GetPrivateProfileString("connection", "user", "anonymous", charParameter, 100, iniPath.c_str());
-    setUser(charParameter);
+    user = charParameter;
     GetPrivateProfileString("connection", "password", "", charParameter, 100, iniPath.c_str());
-    setPassword(charParameter);
+    password = charParameter;
     GetPrivateProfileString("modes", "type", "A N", charParameter, 100, iniPath.c_str());
-    setType(charParameter);
+    type = charParameter;
     GetPrivateProfileString("modes", "mode", "S", charParameter, 100, iniPath.c_str());
-    setMode(charParameter);
+    mode = charParameter;
     GetPrivateProfileString("modes", "structure", "F", charParameter, 100, iniPath.c_str());
-    setStructure(charParameter);
+    structure = charParameter;
     intParameter = GetPrivateProfileInt("modes", "passive", 1, iniPath.c_str());
-    setPassive(intParameter);
+    passive = intParameter;
     GetPrivateProfileString("paths", "path", "", charParameter, 100, iniPath.c_str());
-    setPath(charParameter);
+    path = charParameter;
     GetPrivateProfileString("paths", "localPath", "", charParameter, 100, iniPath.c_str());
-    setLocalPath(charParameter);
-}
-
-/**
- * Установка локального адреса для сохранения файлов, получаемых от FTP-сервера.
- * 
- * @param path Путь.
- */
-void UserInterface::setLocalPath(string path) {
-    this->localPath = path;
-}
-
-/**
- * Установка адреса сервер.
- * 
- * @param address Адрес сервера.
- */
-void UserInterface::setAddress(string address) {
-    this->address = address;
-}
-
-/**
- * Установка имени пользователя.
- * 
- * @param user Имя пользователя.
- */
-void UserInterface::setUser(string user) {
-    this->user = user;
-}
-
-/**
- * Установка пароля.
- * 
- * @param password Пароль.
- */
-void UserInterface::setPassword(string password) {
-    this->password = password;
-}
-
-/**
- * Установить тип представления файлов.
- * 
- * @param type Тип представления файлов.
- */
-void UserInterface::setType(string type) {
-    this->type = type;
-}
-
-/**
- * Установить режим передачи файлов.
- * 
- * @param mode Режим передачи файлов.
- */
-void UserInterface::setMode(string mode) {
-    this->mode = mode;
-}
-
-/**
- * Установка структуры файла.
- * 
- * @param structure Структура файла.
- */
-void UserInterface::setStructure(string structure) {
-    this->structure = structure;
-}
-
-/**
- * Установить путь к файлу.
- * 
- * @param path Путь.
- */
-void UserInterface::setPath(string path) {
-    this->path = path;
-}
-
-/**
- * Установка использования пассивного режима.
- * 
- * @param passive Флаг использования пассивного режима (0 - активный, другое - пассивный).
- */
-void UserInterface::setPassive(int passive) {
-    this->passive = passive;
+    localPath = charParameter;
 }
 
 /**
@@ -228,6 +147,14 @@ void UserInterface::doCommand(string command) {
         path = command.substr(5, command.substr(5).find(" "));
         pi->setPath(path);
         pi->sendCommand("STOR");
+    } else if (command.substr(0, 6) == "rename") {
+        path = command.substr(7, command.substr(7).find(" "));
+        newPath = command.substr(command.find(path) + path.length() + 1);
+        pi->setPath(path);
+        pi->setNewPath(newPath);
+        if (pi->sendCommand("RNFR")) {
+            pi->sendCommand("RNTO");
+        }
     } else if (command.substr(0, 6) == "delete") {
         path = command.substr(7, command.substr(7).find(" "));
         pi->setPath(path);
@@ -287,6 +214,7 @@ void UserInterface::doCommand(string command) {
         service->printMessage(0, "\tfull list [<path>] - full list of files and directories with additional information;\n");
         service->printMessage(0, "\tget <path> to <path> - to get a file from server;\n");
         service->printMessage(0, "\tsend <path> - to send a file to server;\n");
+        service->printMessage(0, "\trename <path> <path> - to rename a file or directory;\n");
         service->printMessage(0, "\tdelete <path> - to delete file from server;\n");
         service->printMessage(0, "\tmkdir - to make a directory;\n");
         service->printMessage(0, "\trmdir - to remove a directory;\n");
