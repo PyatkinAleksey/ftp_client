@@ -47,6 +47,10 @@ void UserInterface::connect() {
     char tmp[1024];
     string command;
     
+    service->printMessage(0, "Welcome to this FTP-client!\n");
+    service->printMessage(0, "Version: 0.5 (beta).\n");
+    service->printMessage(0, "Author: Aleksey Pyatkin.\n");
+    service->printMessage(0, "E-Mail: VitalAleksey@gmail.com\n\n");
     doCommand("connect");
     doCommand("login");
     service->printMessage(1, "Use 'help' command for help.");
