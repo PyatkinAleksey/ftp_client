@@ -303,6 +303,8 @@ int ProtocolInterpreter::sendCommand(string command) {
         success = sendDele();
     } else if (command == "MKD") {
         success = sendMkd();
+    } else if (command == "RMD") {
+        success = sendRmd();
     } else if (command == "CWD") {
         success = sendCwd();
     } else if (command == "CDUP") {
@@ -763,6 +765,29 @@ int ProtocolInterpreter::sendMkd() {
     }
     printReply();
     if (strstr(replyBuffer, "257 ")) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+/**
+ * Отправка команды RMD.
+ * 
+ * @return Флаг успешности выполнения (0 - не успешно, другое - успешно).
+ */
+int ProtocolInterpreter::sendRmd() {
+    service->printMessage(0, "RMD " + path + "\n");
+    commandBuffer = "RMD " + path + "\r\n";
+    result = send(connectionSocket, commandBuffer.c_str(), commandBuffer.length(), 0);
+    if (result == SOCKET_ERROR) {
+        service->printMessage(2, "RMD sending error!");
+        closesocket(connectionSocket);
+        WSACleanup();
+        return 0;
+    }
+    printReply();
+    if (strstr(replyBuffer, "250 ")) {
         return 1;
     } else {
         return 0;

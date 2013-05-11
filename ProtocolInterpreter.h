@@ -79,6 +79,7 @@ class ProtocolInterpreter {
         int sendStor();                                 // Отправка команды STOR
         int sendDele();                                 // Отправка команды DELE
         int sendMkd();                                  // Отправка команды MKD
+        int sendRmd();                                  // Отправка команды RMD
         int sendCwd();                                  // Отправка команды CWD
         int sendCdup();                                 // Отправка команды CDUP
         int sendPwd();                                  // Отправка команды PWD
